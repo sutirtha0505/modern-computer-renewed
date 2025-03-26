@@ -357,7 +357,7 @@ const EditCustomPCCombination = () => {
   };
 
   return (
-    <div className="w-screen h-full max-h-screen items-center justify-center flex p-24">
+    <div className="w-screen h-full min-h-screen items-center justify-center flex p-24">
       <div className=" w-[80%] bg-gray-800 flex flex-col items-center  gap-3 rounded-md custom-backdrop-filter p-3">
         <h2>Build Type</h2>
         <DropdownForCPCEdit

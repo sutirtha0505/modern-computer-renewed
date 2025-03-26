@@ -43,7 +43,7 @@ const CharacterCounterInput: React.FC<CharacterCounterInputProps> = ({
 
     try {
       const { error } = await supabase
-        .from("profile")
+        .from("users")
         .update({ comment: inputValue, UX_star: rating })
         .eq("id", user.id);
 

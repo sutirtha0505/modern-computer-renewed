@@ -21,9 +21,9 @@ interface Product {
 interface Customer {
   id: string;
   email: string;
-  customer_name: string;
+  name: string;
   phone_no: string;
-  profile_photo: string;
+  image: string;
 }
 interface Order {
   order_id: string;
@@ -109,8 +109,8 @@ const OrderedPCComponentManagement = () => {
 
         // Fetch customer details from the profile table
         const { data: customersData, error: customersError } = await supabase
-          .from("profile")
-          .select("id, email, customer_name, phone_no, profile_photo")
+          .from("users")
+          .select("id, email, name, phone_no, image")
           .in("id", Array.from(uniqueCustomerIds));
 
         if (customersError) {
@@ -152,7 +152,7 @@ const OrderedPCComponentManagement = () => {
       return (
         order.order_id.toLowerCase().includes(query) ||
         order.payment_id.toLowerCase().includes(query) ||
-        customer?.customer_name?.toLowerCase().includes(query) ||
+        customer?.name?.toLowerCase().includes(query) ||
         customer?.email?.toLowerCase().includes(query) ||
         order.order_status.toLowerCase().includes(query) // Ensures 'Shipped' or any other status is filtered
       );
@@ -186,7 +186,7 @@ const OrderedPCComponentManagement = () => {
       if (customer) {
         const qrData = `
           Order ID: ${order.order_id}
-          Customer Name: ${customer?.customer_name || "Unknown Name"}
+          Customer Name: ${customer?.name || "Unknown Name"}
           Phone No: ${customer?.phone_no}
           E-Mail: ${customer?.email || "Unknown Email"}
           Address: ${order.order_address}
@@ -211,7 +211,7 @@ const OrderedPCComponentManagement = () => {
       ["Order ID", "Customer Name", "Contact No.", "Email", "Address", "Order Status"], // Header
       ...selectedData.map((order) => [
         order.order_id,
-        customersMap.get(order.customer_id)?.customer_name || "Unknown Name",
+        customersMap.get(order.customer_id)?.name || "Unknown Name",
         customersMap.get(order.customer_id)?.email,
         customersMap.get(order.customer_id)?.phone_no,
         order.order_address,
@@ -368,17 +368,17 @@ const OrderedPCComponentManagement = () => {
                     </td>
                     <td className="px-4 py-2 border w-[25%] text-xs">
                       <div className="flex flex-wrap items-center gap-2 justify-center mb-3">
-                        {customer?.profile_photo && (
+                        {customer?.image && (
                           <Image
-                            src={customer.profile_photo}
-                            alt={customer.customer_name}
+                            src={customer.image}
+                            alt={customer.name}
                             className="w-8 h-8 rounded-full object-cover"
                             width={500}
                             height={500}
                           />
                         )}
                         <p className="text-center">
-                          {customer?.customer_name || "Unknown Name"}
+                          {customer?.name || "Unknown Name"}
                         </p>
                       </div>
                       <div className="flex flex-col gap-2 justify-center items-center">

@@ -35,7 +35,7 @@ const ProductByCategoryAdminPage = () => {
   }
 
   return (
-    <div className="pt-16 w-full h-full max-h-screen pl-4 pr-4 pb-0 flex flex-col items-center justify-center">
+    <div className="pt-16 w-full h-full min-h-screen pl-4 pr-4 pb-0 flex flex-col items-center justify-center">
       <ProductByCategoryAdmin />
     </div>
   );

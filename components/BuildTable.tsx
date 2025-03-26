@@ -27,6 +27,8 @@ type Product = {
 const CustomBuildTable = () => {
   const [builds, setBuilds] = useState<Build[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [buildsPerPage] = useState(5);
 
   useEffect(() => {
     fetchBuilds();
@@ -122,6 +124,15 @@ const CustomBuildTable = () => {
     }
   };
 
+  const indexOfLastBuild = currentPage * buildsPerPage;
+  const indexOfFirstBuild = indexOfLastBuild - buildsPerPage;
+  const currentBuilds = builds.slice(indexOfFirstBuild, indexOfLastBuild);
+  const totalPages = Math.ceil(builds.length / buildsPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-2xl mb-4 text-center font-bold"><span className="text-indigo-600">Custom PC</span> Build Combinations</h1>
@@ -143,7 +154,7 @@ const CustomBuildTable = () => {
             </tr>
           </thead>
           <tbody>
-            {builds.map((build) => (
+            {currentBuilds.map((build) => (
               <tr key={build.id}>
                 <td className="border px-4 py-2">{build.build_type}</td>
                 <td className="border px-4 py-2">
@@ -329,6 +340,48 @@ const CustomBuildTable = () => {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-md ${
+              currentPage === 1
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600'
+            } text-white`}
+          >
+            Previous
+          </button>
+          
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => handlePageChange(index + 1)}
+              className={`px-4 py-2 rounded-md ${
+                currentPage === index + 1
+                  ? 'bg-indigo-500'
+                  : 'bg-gray-500 hover:bg-gray-600'
+              } text-white`}
+            >
+              {index + 1}
+            </button>
+          ))}
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md ${
+              currentPage === totalPages
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600'
+            } text-white`}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };

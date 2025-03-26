@@ -7,8 +7,10 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Rating from './Rating';
 import { User } from '@supabase/supabase-js';
+import { useSession } from 'next-auth/react';
 
 const CustomerReview: React.FC = () => {
+  const { data: session } = useSession();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [rating, setRating] = useState<number>(0);
@@ -16,14 +18,8 @@ const CustomerReview: React.FC = () => {
 
   useEffect(() => {
     const getUserData = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
+      if (session) {
+        setUser(session.user as User);
         setLoading(false);
       }
     };

@@ -26,6 +26,8 @@ const ProductTable: React.FC = () => {
   const [newImages, setNewImages] = useState<File[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(10);
 
   useEffect(() => {
     fetchProducts();
@@ -192,6 +194,16 @@ const ProductTable: React.FC = () => {
     handleSearch();
   };
 
+  // Add pagination logic
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className=" w-full items-center flex flex-col gap-3 p-4">
       <h1 className="text-center text-indigo-500 font-extrabold text-3xl select-text">
@@ -253,7 +265,7 @@ const ProductTable: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map((product) => (
+            {currentProducts.map((product) => (
               <tr key={product.product_id}>
                 <td className="py-2 px-4 border hover:bg-[#283c4f]">
                   {product.product_id}
@@ -431,6 +443,49 @@ const ProductTable: React.FC = () => {
             ))}
           </tbody>
         </table>
+        
+        {/* Add pagination controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-4">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-md ${
+                currentPage === 1
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-blue-500 hover:bg-blue-600'
+              } text-white`}
+            >
+              Previous
+            </button>
+            
+            {[...Array(totalPages)].map((_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`px-4 py-2 rounded-md ${
+                  currentPage === index + 1
+                    ? 'bg-indigo-500'
+                    : 'bg-gray-500 hover:bg-gray-600'
+                } text-white`}
+              >
+                {index + 1}
+              </button>
+            ))}
+            
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-md ${
+                currentPage === totalPages
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-blue-500 hover:bg-blue-600'
+              } text-white`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

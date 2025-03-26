@@ -254,7 +254,7 @@ const ProductUploadForm: React.FC = () => {
 
 
   return (
-    <div className="w-full h-full flex gap-2 flex-col justify-center items-center max-h-screen p-10">
+    <div className="w-full h-full flex gap-2 flex-col justify-center items-center min-h-screen p-10">
       <ToastContainer />
       <h1 className="text-center text-2xl font-bold">Add Products Here</h1>
       <form

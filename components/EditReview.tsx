@@ -8,7 +8,7 @@ import Image from "next/image";
 interface Review {
   UX_star: number;
   comment: string;
-  profile_photo: string; // Assuming profile_photo is a URL to an image
+  image: string; // Assuming profile_photo is a URL to an image
   email: string; // Assuming email is unique for each user
   show_in_carousel: boolean; // Assuming show_in_carousel is a boolean indicating whether the review should be displayed in the carousel
 }
@@ -23,8 +23,8 @@ const EditReview: React.FC = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       const { data, error } = await supabase
-        .from("profile")
-        .select("UX_star, comment, email, profile_photo, show_in_carousel")
+        .from("users")
+        .select("UX_star, comment, email, image, show_in_carousel")
         .not("UX_star", "is", null);
 
       if (error) {
@@ -51,14 +51,16 @@ const EditReview: React.FC = () => {
   const renderStars = (starCount: number) => {
     const totalStars = 5; // Assuming a 5-star rating system
     return (
-      <>
-        {[...Array(starCount)].map((_, index) => (
-          <Star key={index} className="text-yellow-500 fill-current w-4 h-4" />
+      <div className="flex gap-1">
+        {[...Array(totalStars)].map((_, index) => (
+          <Star
+            key={index}
+            className={`w-4 h-4 ${
+              index < starCount ? "text-yellow-500 fill-current" : "text-gray-300"
+            }`}
+          />
         ))}
-        {[...Array(totalStars - starCount)].map((_, index) => (
-          <Star key={index} className="text-gray-300 fill-current w-4 h-4" />
-        ))}
-      </>
+      </div>
     );
   };
 
@@ -71,7 +73,7 @@ const EditReview: React.FC = () => {
 
       try {
         const { error } = await supabase
-          .from("profile")
+          .from("users")
           .update({ show_in_carousel: false })
           .eq("email", review.email);
 
@@ -94,7 +96,7 @@ const EditReview: React.FC = () => {
 
     const updates = selectedReviews.map((review) =>
       supabase
-        .from("profile")
+        .from("users")
         .update({ show_in_carousel: true })
         .eq("email", review.email)
     );
@@ -105,8 +107,8 @@ const EditReview: React.FC = () => {
 
       // Refresh data after updating the database
       const { data, error } = await supabase
-        .from("profile")
-        .select("UX_star, comment, email, profile_photo, show_in_carousel")
+        .from("users")
+        .select("UX_star, comment, email, image, show_in_carousel")
         .not("UX_star", "is", null);
 
       if (!error) {
@@ -142,7 +144,7 @@ const EditReview: React.FC = () => {
           >
             <div className="w-full flex justify-center items-center">
               <Image
-                src={review.profile_photo}
+                src={review.image}
                 alt="Profile photo"
                 className="w-12 h-12 rounded-full absolute -top-5"
                 width={300}
