@@ -1,37 +1,24 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import OrdersForU from '@/components/OrdersForU';
-import { User } from '@supabase/supabase-js';
-
+import { useSession } from 'next-auth/react';
 const OrdersPage = () => {
-    const [user, setUser] = useState<User|null>(null);
+  const { data: session } = useSession()
     const [loading, setLoading] = useState<boolean>(true);
+    const [loadingTime, setLoadingTime] = useState<number | null>(null);
     const router = useRouter();
 
     useEffect(() => {
-        const getUserData = async () => {
-          try {
-            const {
-              data: { user },
-            } = await supabase.auth.getUser();
-    
-            if (!user) {
-              router.push('/SignIn');
-            } else {
-              setUser(user);
-              console.log('User ID:', user.id);  // Print user ID
-            }
-          } catch (error) {
-            console.error('Error fetching user data:', error);
-          } finally {
-            setLoading(false);
-          }
-        };
-    
-        getUserData();
-      }, [router]);
+      const startTime = performance.now();
+      // Simulate loading work (for example, fetching admin data)
+      // Replace the setTimeout with your actual data fetching if needed
+      setTimeout(() => {
+        const endTime = performance.now();
+        setLoadingTime(endTime - startTime);
+        setLoading(false);
+      }, 8000); // simulate a 1 second loading delay
+    }, []);
     
       if (loading) {
         return <div>Loading...</div>;
@@ -44,7 +31,7 @@ const OrdersPage = () => {
         <h1 className='text-3xl font-bold text-center'>
           Check Your <span className='text-indigo-500'>Ordered Products</span>
         </h1>
-        {user && <OrdersForU userId={user.id} />} {/* Pass user.id to CustomerDetails */}
+        {session?.user?.id && <OrdersForU userId={session.user.id} />} {/* Pass user.id to CustomerDetails */}
       </div>
     </div>
   )

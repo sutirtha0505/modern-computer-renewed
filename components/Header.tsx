@@ -1,5 +1,5 @@
 "use client";
-
+import { signOut } from "next-auth/react";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import {
@@ -8,7 +8,7 @@ import {
   LucideLogIn,
   Search,
   UserPlus,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -16,7 +16,8 @@ import { useAppSelector } from "@/lib/hooks/redux";
 import { getCart } from "@/redux/cartSlice";
 import { supabase } from "@/lib/supabaseClient";
 import "@/app/globals.css";
-import { User } from "@supabase/supabase-js";
+import { useSession } from "next-auth/react";
+import { getSupabaseClient } from "@/lib/supabase";
 
 interface Product {
   product_id: string;
@@ -25,6 +26,14 @@ interface Product {
   product_main_category: string;
   show_product: boolean;
   category_product_image: string;
+}
+
+interface UserData {
+  role: string | null;
+  name: string | null;
+  image: string | null;
+  id: string | null;
+  email: string | null;
 }
 
 const Header = () => {
@@ -36,31 +45,27 @@ const Header = () => {
   const pathname = usePathname();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMouseInside, setIsMouseInside] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+
+  // Remove the full user state since we're using userProfile for our custom data
+  // const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserData | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string | null>(null);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
-
-    const handleMouseEnter = () => {
-      setIsMouseInside(true);
-    };
-
-    const handleMouseLeave = () => {
-      setIsMouseInside(false);
-    };
-
+    const handleMouseEnter = () => setIsMouseInside(true);
+    const handleMouseLeave = () => setIsMouseInside(false);
     window.addEventListener("mousemove", handleMouseMove);
     const region = document.getElementById("mouse-region");
     if (region) {
       region.addEventListener("mouseenter", handleMouseEnter);
       region.addEventListener("mouseleave", handleMouseLeave);
     }
-
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       if (region) {
@@ -79,13 +84,11 @@ const Header = () => {
           .select(
             "product_id, product_name, product_image, product_main_category, show_product, category_product_image"
           )
-          .eq("show_product", true); // Filter for products where show_product is true
-
+          .eq("show_product", true);
         if (error) {
           console.error("Error fetching products:", error);
-          setProducts([]); // Set an empty array in case of error
+          setProducts([]);
         } else if (products) {
-          // Ensure unique categories
           const uniqueCategories = Array.from(
             new Set(products.map((product) => product.product_main_category))
           );
@@ -94,15 +97,12 @@ const Header = () => {
               (product) => product.product_main_category === category
             )
           );
-
-          // Filter out undefined values
           const filteredProducts = uniqueProducts.filter(
             (product): product is Product => product !== undefined
           );
-
           setProducts(filteredProducts);
         } else {
-          setProducts([]); // Fallback to an empty array if the data is null
+          setProducts([]);
         }
       } catch (err) {
         console.error("Error:", err);
@@ -122,11 +122,9 @@ const Header = () => {
   ) => {
     const value = e.target.value;
     setQuery(value);
-
     if (value) {
       const lowercasedValue = value.toLowerCase();
-      const suggestionData = await fetchProducts(lowercasedValue); // Fetching products using ILIKE
-
+      const suggestionData = await fetchProducts(lowercasedValue);
       setSuggestions(suggestionData);
     } else {
       setSuggestions([]);
@@ -138,20 +136,18 @@ const Header = () => {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .ilike("product_name", `%${query}%`); // Using ILIKE for broader search
-
+      .ilike("product_name", `%${query}%`);
     if (error) {
       console.error("Error fetching products:", error);
       return [];
     }
-
     return data as Product[];
   };
 
   const handleSuggestionClick = (product: Product) => {
     setQuery(product.product_name);
     setSuggestions([]);
-    searchHandler(); // Trigger search after clicking on a suggestion
+    searchHandler();
   };
 
   useEffect(() => {
@@ -161,16 +157,13 @@ const Header = () => {
   }, [pathname]);
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const toggleProfileMenu = () => {
-    setIsProfileMenuOpen(!isProfileMenuOpen);
-  };
+  const toggleProfileMenu = () => setIsProfileMenuOpen(!isProfileMenuOpen);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       searchHandler();
       setSuggestions([]);
     } else if (event.key === "Escape") {
-      // Clear the suggestions when Escape is pressed
       setSuggestions([]);
     }
   };
@@ -179,31 +172,39 @@ const Header = () => {
     router.push("/cart");
   };
 
+  // Fetch user data from the "users" table using your custom auth() and getSupabaseClient
   useEffect(() => {
     const getUserData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+      if (!session) {
+        console.error("No session available");
+        return;
+      }
+      // Here, assume the session object has an accessToken property.
+      // If not, adjust accordingly (e.g., include it in the session callback).
+      const userId = session?.user?.id;
+      console.log(userId);
+      if (!userId) {
+        console.error("No user id found in session");
+        return;
+      }
+      const { data: userData, error } = await supabase
+        .from("users")
+        .select("role, name, image, id, email")
+        .eq("id", userId)
+        .single();
+      console.log("Query result:", { userData, error });
+      console.log(userId);
 
-      if (user) {
-        const { data: profile, error } = await supabase
-          .from("profile")
-          .select("role, profile_photo, customer_name")
-          .eq("id", user.id)
-          .single();
-        if (error) {
-          console.error("Error fetching profile:", error); // Log the error
-        }
-        if (profile) {
-          setRole(profile.role);
-          setProfilePhoto(profile.profile_photo);
-          setCustomerName(profile.customer_name);
-        }
+      if (userData) {
+        setUserProfile(userData);
+        setRole(userData.role);
+        setProfilePhoto(userData.image);
+        setCustomerName(userData.name);
       }
     };
     getUserData();
-  }, []);
+  }, [session]);
+
   return (
     <>
       <div className="relative" id="mouse-region">
@@ -219,15 +220,16 @@ const Header = () => {
           </Link>
 
           <div className="hidden md:flex gap-10">
+            {/* Navigation Links */}
             <div className="relative group">
-              <Link href="/#productbycategoriesslider" className="responsive-font font-bold">
+              <Link
+                href="/#productbycategoriesslider"
+                className="responsive-font font-bold"
+              >
                 Products
-                <span
-                  className="block h-0.5 w-0 
-                bg-black dark:bg-white absolute bottom-0 left-0 group-hover:w-full transition-all duration-500"
-                ></span>
+                <span className="block h-0.5 w-0 bg-black dark:bg-white absolute bottom-0 left-0 group-hover:w-full transition-all duration-500"></span>
               </Link>
-              <div className="absolute -left-7 w-48 bg-slate-300 dark:bg-slate-800 shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:transition-opacity group-hover:duration-300 p-4 h-96 scrollbar-hide overflow-y-auto">
+              <div className="absolute -left-7 w-48 bg-slate-300 dark:bg-slate-800 shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 p-4 h-96 scrollbar-hide overflow-y-auto">
                 <ul className="py-2 text-gray-800">
                   {products.map((category, index) => (
                     <div
@@ -274,9 +276,7 @@ const Header = () => {
                       height={500}
                     />
                     <li
-                      onClick={() => {
-                        router.push("/pbpc/pbpc-intel");
-                      }}
+                      onClick={() => router.push("/pbpc/pbpc-intel")}
                       className="block text-xs px-4 py-2 cursor-pointer hover:text-indigo-500 dark:text-white font-bold"
                     >
                       <p>Pre-Build Intel PC</p>
@@ -291,9 +291,7 @@ const Header = () => {
                       width={500}
                     />
                     <li
-                      onClick={() => {
-                        router.push("/pbpc/pbpc-amd");
-                      }}
+                      onClick={() => router.push("/pbpc/pbpc-amd")}
                       className="block text-xs px-4 py-2 cursor-pointer hover:text-indigo-500 dark:text-white font-bold"
                     >
                       <p>Pre-Build AMD PC</p>
@@ -308,7 +306,7 @@ const Header = () => {
                 Custom-Build PC
                 <span className="block h-0.5 w-0 bg-black dark:bg-white absolute bottom-0 left-0 group-hover:w-full transition-all duration-500"></span>
               </Link>
-              <div className="absolute -left-7 w-48 bg-slate-300 dark:bg-slate-800 shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:transition-opacity group-hover:duration-300 p-4">
+              <div className="absolute -left-7 w-48 bg-slate-300 dark:bg-slate-800 shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 p-4">
                 <ul className="py-2 text-gray-800">
                   <div className="flex items-center justify-start">
                     <Image
@@ -319,9 +317,7 @@ const Header = () => {
                       width={500}
                     />
                     <li
-                      onClick={() => {
-                        router.push("/cbpc/cbpc-intel");
-                      }}
+                      onClick={() => router.push("/cbpc/cbpc-intel")}
                       className="block text-xs px-4 py-2 cursor-pointer hover:text-indigo-500 dark:text-white font-bold"
                     >
                       <p>Custom-Build Intel PC</p>
@@ -336,9 +332,7 @@ const Header = () => {
                       width={500}
                     />
                     <li
-                      onClick={() => {
-                        router.push("/cbpc/cbpc-amd");
-                      }}
+                      onClick={() => router.push("/cbpc/cbpc-amd")}
                       className="block text-xs px-4 py-2 cursor-pointer hover:text-indigo-500 dark:text-white font-bold"
                     >
                       <p>Custom-Build AMD PC</p>
@@ -357,16 +351,15 @@ const Header = () => {
           </div>
 
           <div className="flex relative w-fit items-center justify-start">
-          {/* Conditionally render the back button */}
             {query && (
               <button
                 onClick={() => {
                   setSuggestions([]);
-                  setQuery(""); // Optionally clear the query
+                  setQuery("");
                 }}
                 className="absolute p-2"
               >
-                <ArrowLeft className="text-black" /> {/* Replace with your desired icon from lucid-react */}
+                <ArrowLeft className="text-black" />
               </button>
             )}
             <input
@@ -378,32 +371,25 @@ const Header = () => {
               className="pl-11 py-2 rounded-full border border-black dark:border-gray-300 w-[220px] focus:outline-none text-black"
             />
             {suggestions.length > 0 && (
-              <ul
-                className="absolute bg-slate-300 dark:bg-slate-900 border border-black dark:border-gray-300 w-auto mt-1 max-h-48 overflow-y-auto z-10 top-10 scrollbar-hide p-6
-              "
-              >
+              <ul className="absolute bg-slate-300 dark:bg-slate-900 border border-black dark:border-gray-300 w-auto mt-1 max-h-48 overflow-y-auto z-10 top-10 scrollbar-hide p-6">
                 {suggestions.map((product) => (
                   <div
-                    className="w-full justify-center hover:bg-gray-200  dark:hover:bg-gray-700 items-center flex flex-wrap gap-2"
-                    onClick={() => handleSuggestionClick(product)}
                     key={product.product_id}
+                    className="w-full justify-center hover:bg-gray-200 dark:hover:bg-gray-700 items-center flex flex-wrap gap-2 cursor-pointer"
+                    onClick={() => handleSuggestionClick(product)}
                   >
                     <Image
                       src={
                         product.product_image?.find((img: { url: string }) =>
                           img.url.includes("_first")
-                        )?.url || "/fallback-image.jpg" // Provide a fallback URL
+                        )?.url || "/fallback-image.jpg"
                       }
                       alt="Product Image"
                       className="w-12 h-12 rounded-full object-cover"
                       width={500}
                       height={500}
                     />
-
-                    <li
-                      key={product.product_id}
-                      className="cursor-pointer p-2 text-xs break-all"
-                    >
+                    <li className="cursor-pointer p-2 text-xs break-all">
                       {product.product_name}
                     </li>
                   </div>
@@ -426,18 +412,16 @@ const Header = () => {
               />
               {isProfileMenuOpen && (
                 <div className="absolute right-0 w-52 bg-gray-400 dark:bg-slate-800 rounded-md shadow-lg z-10 custom-backdrop-filter backdrop-blur-md mt-2">
-                  {user ? (
+                  {userProfile ? (
                     <>
                       <div
                         className="flex justify-center items-center gap-3 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md backdrop-blur-3xl"
                         onClick={() => {
-                          if (user && user.id) {
-                            // Navigate to a user profile page or perform an action with the user ID
-                            router.push(`/profile/${user.id}`);
+                          if (userProfile && userProfile.id) {
+                            router.push(`/profile/${userProfile.id}`);
                           }
                         }}
                       >
-                        {/* image here by matching the id from profile table */}
                         {profilePhoto ? (
                           <Image
                             src={profilePhoto}
@@ -449,17 +433,15 @@ const Header = () => {
                         ) : (
                           <CircleUser className="w-7 h-7" />
                         )}
-                        <h1 className="text-sm font-medium hover:text-indigo-600 cursor-pointer block w-fit text-center overflow-hidden text-wrap break-before-auto">
+                        <h1 className="text-sm font-medium hover:text-indigo-600 cursor-pointer block w-fit text-center overflow-hidden">
                           {customerName
-                            ? customerName // Render customer_name if it exists
-                            : user?.user_metadata?.name
-                              ? user.user_metadata.name
-                              : user.email}
+                            ? customerName
+                            : userProfile.name || userProfile.email || ""}
                         </h1>
                       </div>
                       {role === "admin" && (
                         <div
-                          className="flex justify-center gap-8 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md dark:text-white cursor-pointer hover:text-indigo-600"
+                          className="flex justify-center gap-8 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md cursor-pointer hover:text-indigo-600 dark:text-white"
                           onClick={() => {
                             toggleProfileMenu();
                             router.push("/admin");
@@ -476,7 +458,7 @@ const Header = () => {
                         </div>
                       )}
                       <div
-                        className="flex justify-center gap-8 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md dark:text-white cursor-pointer hover:text-indigo-600"
+                        className="flex justify-center gap-8 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md cursor-pointer hover:text-indigo-600 dark:text-white"
                         onClick={() => {
                           toggleProfileMenu();
                           router.push("/orders");
@@ -493,11 +475,7 @@ const Header = () => {
                       </div>
                       <div className="flex justify-center gap-3 px-4 py-2">
                         <button
-                          onClick={async () => {
-                            toggleProfileMenu();
-                            await supabase.auth.signOut();
-                            window.location.reload();
-                          }}
+                          onClick={() => signOut()}
                           className="bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 h-10 w-28 rounded-md text-xs hover:text-l hover:font-bold duration-200"
                         >
                           Logout
@@ -506,24 +484,26 @@ const Header = () => {
                     </>
                   ) : (
                     <>
-                      <div className="flex justify-start gap-3 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md" onClick={()=>{
-                        router.push('/SignIn')
-                      }}>
+                      <div
+                        className="flex justify-start gap-3 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md"
+                        onClick={() => router.push("/login")}
+                      >
                         <LucideLogIn className="text-indigo-500" />
                         <Link
-                          href="/SignIn"
+                          href="/login"
                           className="text-white cursor-pointer hover:text-indigo-600"
                           onClick={(e) => e.stopPropagation()}
                         >
                           LogIn
                         </Link>
                       </div>
-                      <div className="flex justify-start gap-3 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md" onClick={()=>{
-                        router.push('/SignUp')
-                      }}>
-                        <UserPlus className=" text-emerald-400" />
+                      <div
+                        className="flex justify-start gap-3 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md"
+                        onClick={() => router.push("/signup")}
+                      >
+                        <UserPlus className="text-emerald-400" />
                         <Link
-                          href="/SignUp"
+                          href="/signup"
                           className="text-white cursor-pointer hover:text-emerald-400"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -550,8 +530,9 @@ const Header = () => {
           <div
             className="fixed top-0 left-0 w-8 h-8 bg-indigo-500 rounded-full blur-md pointer-events-none"
             style={{
-              transform: `translate(${mousePosition.x - 16}px, ${mousePosition.y - 16
-                }px)`,
+              transform: `translate(${mousePosition.x - 16}px, ${
+                mousePosition.y - 16
+              }px)`,
             }}
           ></div>
         )}

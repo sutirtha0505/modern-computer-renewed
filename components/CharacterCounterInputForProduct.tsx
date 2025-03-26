@@ -36,8 +36,8 @@ const CharacterCounterInputForproduct: React.FC<
     const fetchProfilePhoto = async () => {
       if (user?.id) {
         const { data, error } = await supabase
-          .from("profile") // Fetch from the 'profile' table
-          .select("profile_photo")
+          .from("users") // Fetch from the 'profile' table
+          .select("image")
           .eq("id", user.id) // Match the user.id with the id column
           .single();
 
@@ -45,7 +45,7 @@ const CharacterCounterInputForproduct: React.FC<
           console.error("Error fetching profile photo:", error);
           toast.error("Error fetching profile photo.");
         } else {
-          setProfilePhoto(data?.profile_photo || null); // Set the profile photo URL
+          setProfilePhoto(data?.image || null); // Set the profile photo URL
         }
       }
     };

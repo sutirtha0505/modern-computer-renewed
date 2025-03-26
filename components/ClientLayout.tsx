@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import LoadingScreen from "@/components/LoadingScreen";
 import Footer from "./Footer";
+import { SessionProvider } from "next-auth/react";
 
 // Dynamically import the components
 const ReduxProvider = dynamic(() => import("@/components/ReduxProvider"), { ssr: false });

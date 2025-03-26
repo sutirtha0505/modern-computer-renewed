@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
+import { SessionProviderWrapper } from "@/components/SessionProvderWrapper";
 const inter = Inter({ subsets: ["latin"] });
 
 // Define metadata for the entire site
@@ -98,12 +98,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-[#DFE4E4] dark:bg-black">
-      <body className={inter.className}>
+    <html lang="en" className="bg-[#DFE4E4] dark:bg-black" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
         <Suspense fallback={<LoadingScreen />}>
-          <ClientLayout>
-            {children}
-          </ClientLayout>
+          <SessionProviderWrapper>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </SessionProviderWrapper>
           <SpeedInsights />
         </Suspense>
       </body>

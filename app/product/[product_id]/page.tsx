@@ -47,7 +47,7 @@ export async function generateMetadata(
       images: product?.product_image?.[0]?.url ? [product.product_image[0].url] : [],
     },
     alternates: {
-      canonical: `https://moderncomputer.vercel.app/product/${params.product_id}`,
+      canonical: `https://moderncomputer.in/product/${params.product_id}`,
     },
   };
 }

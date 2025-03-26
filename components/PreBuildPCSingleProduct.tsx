@@ -12,6 +12,7 @@ import SinglePBPCProductReviews from "./SinglePBPCProductReviews";
 import CharacterCounterInputForPBPCProduct from "./CharacterCounterInputForPBPCProduct";
 import RatingForPBPCProduct from "./RatingForPBPCProduct";
 import { User } from "@supabase/supabase-js";
+import { useSession } from "next-auth/react";
 
 interface Product {
   id: string;
@@ -47,6 +48,7 @@ interface PreBuildPCSingleProductProps {
 }
 
 const PreBuildPCSingleProduct: React.FC<PreBuildPCSingleProductProps> = ({ id }) => {
+  const { data: session } = useSession();
   const [isHeartFilled, setIsHeartFilled] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -170,14 +172,8 @@ const PreBuildPCSingleProduct: React.FC<PreBuildPCSingleProductProps> = ({ id })
       fetchPreBuilds();
     }
     const fetchUserData = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
+      if (session) {
+        setUser(session.user as User);
         setLoading(false);
       }
     };

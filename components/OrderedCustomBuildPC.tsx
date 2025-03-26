@@ -195,12 +195,12 @@ const OrderedCustomBuildPC: React.FC<OrderedCustomBuildPCProps> = ({
                 <div className="w-full flex flex-wrap md:flex-nowrap items-center justify-between gap-10">
                   <ol className="w-auto list-decimal flex flex-col justify-center gap-2">
                     {order.ordered_products.map((product, idx) => (
-                      <li
+                      <div
                         key={idx}
                         className="flex hover:text-indigo-600 items-center cursor-pointer"
                       >
                         {renderProduct(product)}
-                      </li>
+                      </div>
                     ))}
                   </ol>
                   <div className="w-auto flex flex-col justify-center items-center gap-2">

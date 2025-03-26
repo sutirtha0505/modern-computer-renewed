@@ -2,12 +2,13 @@
 import React, { useEffect, useState } from "react";
 import HeaderCart from "./HeaderCart";
 import CustomerDetails from "./CustomerDetails";
-import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import CartSingleProductFinalCheckOut from "./CartSingleProductFinalCheckOut";
 import { User } from "@supabase/supabase-js";
+import { useSession } from "next-auth/react";
 
 const CheckOutSingleProduct = () => {
+  const { data: session } = useSession();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
@@ -15,15 +16,10 @@ const CheckOutSingleProduct = () => {
   useEffect(() => {
     const getUserData = async () => {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          router.push("/SignIn");
+        if (!session) {
+          router.push("/login");
         } else {
-          setUser(user);
-          console.log("User ID:", user.id); // Print user ID
+          setUser(session.user as User);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -33,7 +29,8 @@ const CheckOutSingleProduct = () => {
     };
 
     getUserData();
-  }, [router]);
+  }, [router, session]);
+
 
   if (loading) {
     return <div>Loading...</div>;

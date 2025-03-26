@@ -69,16 +69,15 @@ const SinglePBPCProductReviews: React.FC<SinglePBPCProductReviewsProps> = ({
           const reviewsWithProfiles: Review[] = await Promise.all(
             productData.user_rating.map(async (review: Review) => {
               const { data: profileData } = await supabase
-                .from("profile")
-                .select("customer_name, profile_photo")
+                .from("users")
+                .select("name, image")
                 .eq("id", review.user)
                 .single();
 
               return {
                 ...review,
-                customer_name:
-                  profileData?.customer_name || "Non-Verified User",
-                profile_photo: profileData?.profile_photo || null,
+                customer_name: profileData?.name || "Non-Verified User",
+                profile_photo: profileData?.image || null,
               };
             })
           );

@@ -6,8 +6,9 @@ import { supabase } from "@/lib/supabaseClient";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Image from "next/image";
-
+import { useSession } from "next-auth/react";
 const UserProfile = () => {
+  const { data: session } = useSession();
   const params = useParams();
   const { id } = params;
   const [email, setEmail] = useState<string | null>(null);
@@ -26,24 +27,17 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Get the current logged-in user's ID
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-if (!user || user && user.id !== id) {
-          // If the user ID does not match the profile ID, redirect to /SignIn
-          router.push("/SignIn");
-          return;
+        if (!session) {
+          router.push("/login");
         }
 
         // If the IDs match, fetch the profile data
-        if (id) {   
+        if (id) {
           try {
             const { data: profileData, error: profileError } = await supabase
-              .from("profile")
+              .from("users")
               .select(
-                "email, phone_no, customer_house_no, customer_house_street, customer_house_landmark, customer_house_city, customer_house_pincode, profile_photo"
+                "email, phone_no, customer_house_no, customer_house_street, customer_house_landmark, customer_house_city, customer_house_pincode, image"
               )
               .eq("id", id)
               .single();
@@ -60,12 +54,12 @@ if (!user || user && user.id !== id) {
               setLandmark(profileData?.customer_house_landmark || null);
               setCity(profileData?.customer_house_city || null);
               setPinCode(profileData?.customer_house_pincode || null);
-              setPhotoUrl(profileData?.profile_photo || null);
+              setPhotoUrl(profileData?.image || null);
             }
 
             // Fetch user name from supabase.auth
-            if (user) {
-              setName(user.user_metadata.name);
+            if (session) {
+              setName(session.user.name || null);
             }
           } catch (error) {
             console.error("Unexpected error fetching user data:", error);
@@ -117,16 +111,16 @@ if (!user || user && user.id !== id) {
           uploadedPhotoUrl = publicUrl.publicUrl;
         }
         const { error } = await supabase
-          .from("profile")
+          .from("users")
           .update({
-            customer_name: name,
+            name: name,
             phone_no: phoneNo,
             customer_house_no: houseNo,
             customer_house_street: streetName,
             customer_house_landmark: landmark,
             customer_house_city: city,
             customer_house_pincode: pinCode,
-            profile_photo: uploadedPhotoUrl,
+            image: uploadedPhotoUrl,
           })
           .eq("id", id);
 
@@ -175,7 +169,7 @@ if (!user || user && user.id !== id) {
         ) : (
           <Image
             src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/profile_display.png"
-            alt=""
+            alt="Profile"
             className="w-10 h-10"
             height={500}
             width={500}
@@ -191,7 +185,7 @@ if (!user || user && user.id !== id) {
           <div className="flex gap-3 items-center ">
             <Image
               src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/email.png"
-              alt=""
+              alt="Email"
               className="w-4 h-4"
               width={200}
               height={200}
@@ -213,7 +207,7 @@ if (!user || user && user.id !== id) {
           <div className="flex gap-3 items-center">
             <Image
               src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/profile.png"
-              alt=""
+              alt="Name"
               className="w-4 h-4"
               width={200}
               height={200}
@@ -236,7 +230,7 @@ if (!user || user && user.id !== id) {
           <div className="flex gap-3 items-center">
             <Image
               src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/call.png"
-              alt=""
+              alt="Phone No"
               className="w-4 h-4"
               width={200}
               height={200}
@@ -259,7 +253,7 @@ if (!user || user && user.id !== id) {
             <div className="flex gap-3 items-center">
               <Image
                 src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/house.png"
-                alt=""
+                alt="House No"
                 className="w-4 h-4"
                 width={200}
                 height={200}
@@ -281,7 +275,7 @@ if (!user || user && user.id !== id) {
             <div className="flex gap-3 items-center">
               <Image
                 src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/streets.png"
-                alt=""
+                alt="Street Name"
                 className="w-4 h-4"
                 width={200}
                 height={200}
@@ -305,7 +299,7 @@ if (!user || user && user.id !== id) {
             <div className="flex gap-3 items-center">
               <Image
                 src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/landmark.png"
-                alt=""
+                alt="Landmark"
                 className="w-4 h-4"
                 width={200}
                 height={200}
@@ -327,7 +321,7 @@ if (!user || user && user.id !== id) {
             <div className="flex gap-3 items-center">
               <Image
                 src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/architecture-and-city.png"
-                alt=""
+                alt="City"
                 className="w-4 h-4"
                 width={200}
                 height={200}
@@ -349,7 +343,7 @@ if (!user || user && user.id !== id) {
             <div className="flex gap-3 items-center">
               <Image
                 src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/mailbox.png"
-                alt=""
+                alt="Pin Code"
                 className="w-4 h-4"
                 width={200}
                 height={200}

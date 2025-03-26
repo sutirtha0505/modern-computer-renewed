@@ -19,9 +19,9 @@ type GalleryImage = {
 };
 
 type ProfilePhoto = {
-  profile_photo: string;
+  image: string;
   email: string;
-  customer_name: string;
+  name: string;
   UX_star: number;
   comment: string;
 };
@@ -56,8 +56,8 @@ const About: React.FC = () => {
 
   const fetchProfilePhotos = async () => {
     const { data, error } = await supabase
-      .from("profile")
-      .select("profile_photo, email, customer_name, UX_star, comment")
+      .from("users")
+      .select("image, email, name, UX_star, comment")
       .eq("show_in_carousel", true);
 
     if (error) {
@@ -279,13 +279,13 @@ const About: React.FC = () => {
               key={index}
               className="w-96 h-96 p-6 bg-white/90 dark:bg-slate-900 rounded-md shadow-lg flex flex-col justify-center gap-6 items-center relative"
             >
-              <Image src={profile.profile_photo}
+              <Image src={profile.image}
                 alt={`Profile ${index}`}
                 className="w-24 h-24 rounded-full mx-auto absolute -top-9"
                 width={250} height={250}
               />
               <h2 className="text-xl font-semibold text-center">
-                {profile.customer_name}
+                {profile.name}
               </h2>
               <div className="flex justify-center items-center gap-2">
                 {[...Array(5)].map((_, starIndex) => (

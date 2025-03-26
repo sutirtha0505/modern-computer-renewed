@@ -99,23 +99,23 @@ const RecentProducts: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col justify-center items-center w-96 h-[550px] rounded-md bg-slate-800 p-4">
+    <div className="flex flex-col justify-center items-center w-[550px] h-[750px] rounded-md bg-slate-800 p-4">
       <ToastContainer />
       <h1 className="text-xl font-extrabold text-center">
         Add images For <span className="text-indigo-600">Recent Products</span>
       </h1>
       <div
         {...getRootProps()}
-        className="w-20 h-20 mt-4 rounded-full border-2 border-dashed flex items-center justify-center outline-none cursor-pointer"
+        className="w-40 h-40 mt-4 rounded-full border-2 border-dashed flex items-center justify-center outline-none cursor-pointer"
       >
         <input {...getInputProps()} />
-        <ImageUp />
+        <ImageUp className="w-15 h-15"/>
       </div>
       {selectedFiles.length > 0 && (
         <>
-          <div className="mt-4 h-40 overflow-y-scroll flex flex-wrap justify-center gap-4">
+          <div className="mt-4 h-64 overflow-y-scroll flex flex-wrap justify-center gap-4">
             {selectedFiles.map((file) => (
-              <div key={file.name} className="relative w-20 h-20">
+              <div key={file.name} className="relative w-40 h-40">
                 <Image
                   src={URL.createObjectURL(file)}
                   alt={file.name}
@@ -140,9 +140,9 @@ const RecentProducts: React.FC = () => {
           </button>
         </>
       )}
-      <div className="h-30 flex justify-start items-center w-full gap-2 p-2 overflow-x-scroll">
+      <div className="h-60 flex justify-start items-center w-full gap-2 p-2 overflow-x-scroll">
         {galleryImages.map((image, index) => (
-          <div key={index} className="relative flex-shrink-0 w-32 h-32">
+          <div key={index} className="relative flex-shrink-0 w-40 h-40">
             <Image
               src={image.url}
               alt={`Gallery image ${index}`}

@@ -18,13 +18,13 @@ interface Product {
   date_applicable: string;
 }
 interface CustomerDetails {
-  customer_name: string;
+  name: string;
   customer_house_no: string;
   customer_house_street: string;
   customer_house_city: string;
   customer_house_pincode: number;
   customer_house_landmark: string;
-  profile_photo: string;
+  image: string;
   email: string;
   phone_no: string;
 }
@@ -112,9 +112,9 @@ const PreBuildSingleProductFinalCheckOut: React.FC<
     const fetchCustomerDetails = async () => {
       try {
         const { data, error } = await supabase
-          .from("profile")
+          .from("users")
           .select(
-            "customer_name, customer_house_no, customer_house_street, customer_house_city, customer_house_pincode, customer_house_landmark, profile_photo, email, phone_no"
+            "name, customer_house_no, customer_house_street, customer_house_city, customer_house_pincode, customer_house_landmark, image, email, phone_no"
           )
           .eq("id", userId)
           .single();
@@ -125,7 +125,7 @@ const PreBuildSingleProductFinalCheckOut: React.FC<
         }
 
         if (
-          !data.customer_name ||
+          !data.name ||
           !data.customer_house_no ||
           !data.customer_house_street ||
           !data.customer_house_city ||
@@ -133,7 +133,7 @@ const PreBuildSingleProductFinalCheckOut: React.FC<
           !data.customer_house_landmark ||
           !data.email ||
           !data.phone_no ||
-          !data.profile_photo
+          !data.image
         ) {
           router.push(`/profile/${userId}`);
         } else {
@@ -231,7 +231,7 @@ const PreBuildSingleProductFinalCheckOut: React.FC<
           }, 3000);
         },
         prefill: {
-          name: customerDetails?.customer_name,
+          name: customerDetails?.name,
           email: customerDetails?.email,
           contact: customerDetails?.phone_no,
         },

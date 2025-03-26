@@ -7,13 +7,13 @@ interface CustomerDetailsProps {
   userId: string; // Define the type for userId
 }
 interface CustomerDetailsType {
-  customer_name: string;
+  name: string;
   customer_house_no: string;
   customer_house_street: string;
   customer_house_city: string;
   customer_house_pincode: string;
   customer_house_landmark: string;
-  profile_photo: string;
+  image: string;
   email: string;
   phone_no: string;
 }
@@ -28,9 +28,9 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ userId }) => {
     const fetchCustomerDetails = async () => {
       try {
         const { data, error } = await supabase
-          .from("profile")
+          .from("users")
           .select(
-            "customer_name, customer_house_no, customer_house_street, customer_house_city, customer_house_pincode, customer_house_landmark, profile_photo, email, phone_no"
+            "name, customer_house_no, customer_house_street, customer_house_city, customer_house_pincode, customer_house_landmark, image, email, phone_no"
           )
           .eq("id", userId) // Match userId with profile id
           .single(); // Fetch a single row if matched
@@ -42,7 +42,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ userId }) => {
 
         // Check if any of the required fields are missing
         if (
-          !data.customer_name ||
+          !data.name ||
           !data.customer_house_no ||
           !data.customer_house_street ||
           !data.customer_house_city ||
@@ -50,7 +50,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ userId }) => {
           !data.customer_house_landmark ||
           !data.email ||
           !data.phone_no ||
-          !data.profile_photo // Check if profile_photo exists in the returned data
+          !data.image // Check if profile_photo exists in the returned data
         ) {
           router.push("/profile/[id]"); // Redirect to /profile
         } else {
@@ -78,7 +78,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ userId }) => {
     <div className="w-full p-8 flex justify-center items-center">
       <div className="w-72 bg-white/50 custom-backdrop-filter p-4 rounded-md flex flex-col justify-between items-center gap-2">
         <Image
-          src={customerDetails.profile_photo}
+          src={customerDetails.image}
           alt="Customer Profile"
           className="w-24 h-24 rounded-full"
           width={500}
@@ -86,7 +86,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ userId }) => {
         />
         <h1 className="text-lg font-bold">Order for</h1>
         <h1 className="text-xl font-bold text-indigo-500">
-          {customerDetails.customer_name}
+          {customerDetails.name}
         </h1>
         <div className="w-full flex gap-3 justify-center items-center">
           <label

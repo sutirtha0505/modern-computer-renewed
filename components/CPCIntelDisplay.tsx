@@ -297,7 +297,7 @@ const CPCIntelDisplay = () => {
               </div>
             ) : (
               <Image
-                src={selectedMotherboardOptions[0]?.image || ""}
+                src={selectedMotherboardOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/Motherboard/image.png"}
                 className={`w-full h-full object-contain ${
                   selectedMotherboardOptions.length ? "" : "invisible"
                 }`}
@@ -309,7 +309,7 @@ const CPCIntelDisplay = () => {
 
             <div className="w-32 h-48 border-0 -right-1 absolute -z-[1] md:-right-9 ">
               <Image
-                src={selectedCabinetOptions[0]?.image || ""}
+                src={selectedCabinetOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/Cabinet/image.png"}
                 className={`w-full h-full object-contain ${
                   selectedCabinetOptions.length ? "" : "invisible"
                 }`}
@@ -319,7 +319,7 @@ const CPCIntelDisplay = () => {
               />
               <div className="w-16 h-28  absolute -top-12">
                 <Image
-                  src={selectedHDDOptions[0]?.image || ""}
+                  src={selectedHDDOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/Hard%20Disk/image.png"}
                   className={`w-full h-full object-contain ${
                     selectedHDDOptions.length ? "" : "invisible"
                   }`}
@@ -331,7 +331,7 @@ const CPCIntelDisplay = () => {
             </div>
             <div className="w-40 h-10 absolute z-[3]  left-5 -bottom-5">
               <Image
-                src={selectedRAMOptions[0]?.image || ""}
+                src={selectedRAMOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/RAM/image.png"}
                 className={`w-full h-full object-contain border-none ${
                   selectedRAMOptions.length ? "" : "invisible"
                 }`}
@@ -342,7 +342,7 @@ const CPCIntelDisplay = () => {
             </div>
             <div className="w-40 h-10 absolute z-[3]  left-5 -top-5">
               <Image
-                src={selectedSSDOptions[0]?.image || ""}
+                src={selectedSSDOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/SSD/image.png"}
                 className={`w-full h-full object-contain ${
                   selectedSSDOptions.length ? "" : "invisible"
                 }`}
@@ -353,7 +353,7 @@ const CPCIntelDisplay = () => {
             </div>
             <div className="w-20 h-20 absolute z-[3] -bottom-3 -left-3 md:-left-3">
               <Image
-                src={selectedPSUOptions[0]?.image || ""}
+                src={selectedPSUOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/Power%20Supply/image.png"}
                 className={`w-full h-full object-contain ${
                   selectedCoolerOptions.length ? "" : "invisible"
                 }`}
@@ -364,7 +364,7 @@ const CPCIntelDisplay = () => {
             </div>
             <div className="w-20 h-20 absolute z-[3] -top-3 -left-3 md:-left-3">
               <Image
-                src={selectedProcessorOptions[0]?.image || ""}
+                src={selectedProcessorOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/Processor/image.png"}
                 className={`w-full h-full object-contain ${
                   selectedPSUOptions.length ? "" : "invisible"
                 }`}
@@ -375,7 +375,7 @@ const CPCIntelDisplay = () => {
             </div>
             <div className="w-20 h-20 absolute z-[4] -top-9 -right-3 md:-right-3">
               <Image
-                src={selectedGraphicsCardOptions[0]?.image || ""}
+                src={selectedGraphicsCardOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/Graphics%20Card/image.png"}
                 className={`w-full h-full object-contain ${
                   selectedGraphicsCardOptions.length ? "" : "invisible"
                 }`}
@@ -386,7 +386,7 @@ const CPCIntelDisplay = () => {
             </div>
             <div className="w-20 h-20 absolute z-[4] -bottom-9 -right-3 md:-right-3">
               <Image
-                src={selectedCoolerOptions[0]?.image || ""}
+                src={selectedCoolerOptions[0]?.image || "https://supabase.moderncomputer.in/storage/v1/object/public/product-image/product_by_category/Cooling%20System/image.png"}
                 className={`w-full h-full object-contain ${
                   selectedCoolerOptions.length ? "" : "invisible"
                 }`}

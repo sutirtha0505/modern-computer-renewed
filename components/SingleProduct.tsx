@@ -8,13 +8,13 @@ import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carous
 import { ToastContainer } from "react-toastify"; // Import toast and ToastContainer from react-toastify
 import "react-toastify/dist/ReactToastify.css"; // Import CSS for react-toastify
 import { useRouter } from "next/navigation";
-import { ProductJsonLd } from 'next-seo';
+import { ProductJsonLd } from "next-seo";
 import RatingForProduct from "./RatingForProduct";
 import CharacterCounterInputForProduct from "./CharacterCounterInputForProduct";
 import { supabase } from "@/lib/supabaseClient";
 import SingleProductReviews from "./SingleProductReviews";
 import { User } from "@supabase/supabase-js";
-
+import { useSession } from "next-auth/react";
 
 interface SingleProduct {
   product_id: string;
@@ -28,7 +28,12 @@ interface SingleProduct {
   product_amount: number;
 }
 
-const SingleProduct = ({ singleProduct }: { singleProduct: SingleProduct | null }) => {
+const SingleProduct = ({
+  singleProduct,
+}: {
+  singleProduct: SingleProduct | null;
+}) => {
+  const { data: session } = useSession();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isHeartFilled, setIsHeartFilled] = useState(false);
@@ -116,18 +121,14 @@ const SingleProduct = ({ singleProduct }: { singleProduct: SingleProduct | null 
   };
 
   useEffect(() => {
+    // Set the user from the session data
     const fetchUserData = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
+      if (session) {
+        setUser(session.user as User);
         setLoading(false);
       }
     };
+
 
     const fetchAverageRating = async () => {
       if (!singleProduct) return; // Early exit if singleProduct is not defined
@@ -154,10 +155,9 @@ const SingleProduct = ({ singleProduct }: { singleProduct: SingleProduct | null 
         console.error("Error fetching average rating:", error);
       }
     };
-
     fetchUserData();
     fetchAverageRating();
-  }, [singleProduct]);
+  }, [singleProduct, session]);
 
   const handleResetRating = () => {
     setRating(0);
@@ -206,18 +206,22 @@ const SingleProduct = ({ singleProduct }: { singleProduct: SingleProduct | null 
         <ProductJsonLd
           productName={singleProduct.product_name}
           description={singleProduct.product_description}
-          images={singleProduct.product_image?.map(img => img.url) || []}
+          images={singleProduct.product_image?.map((img) => img.url) || []}
           offers={{
             price: singleProduct.product_SP.toString(),
-            priceCurrency: 'INR',
-            availability: 'https://schema.org/InStock'
+            priceCurrency: "INR",
+            availability: "https://schema.org/InStock",
           }}
-          aggregateRating={averageRating ? {
-            ratingValue: averageRating.toString(),
-            reviewCount: '1',
-            bestRating: '5',
-            worstRating: '1'
-          } : undefined}
+          aggregateRating={
+            averageRating
+              ? {
+                  ratingValue: averageRating.toString(),
+                  reviewCount: "1",
+                  bestRating: "5",
+                  worstRating: "1",
+                }
+              : undefined
+          }
         />
       )}
 
@@ -265,7 +269,9 @@ const SingleProduct = ({ singleProduct }: { singleProduct: SingleProduct | null 
               {/* Rating Component */}
               <Stars rating={averageRating ?? 0} />{" "}
               <p className="text-xs font-bold">
-                {averageRating !== null ? averageRating.toFixed(1) : "No Reviews"}
+                {averageRating !== null
+                  ? averageRating.toFixed(1)
+                  : "No Reviews"}
               </p>
               {/* Stars component for average rating */}
             </div>
@@ -279,26 +285,28 @@ const SingleProduct = ({ singleProduct }: { singleProduct: SingleProduct | null 
                   &#x20B9;{singleProduct.product_MRP}
                 </p>
                 <p className="font-bold text-sm text-emerald-300">
-                ({singleProduct.product_discount.toFixed(2)}%)
+                  ({singleProduct.product_discount.toFixed(2)}%)
                 </p>
               </div>
             </div>
             <div className="w-full flex gap-10">
               <button
                 className={`${
-                  singleProduct.product_amount <= 0 
-                    ? "bg-gray-400 cursor-not-allowed filter grayscale" 
+                  singleProduct.product_amount <= 0
+                    ? "bg-gray-400 cursor-not-allowed filter grayscale"
                     : "bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl"
                 } focus:ring-4 focus:outline-none focus:ring-pink-200 h-10 w-28 rounded-md text-l hover:text-l hover:font-bold duration-200`}
                 onClick={handleAddToCart}
                 disabled={singleProduct.product_amount <= 0}
               >
-                {singleProduct.product_amount <= 0 ? "Out of Stock" : "Add to Cart"}
+                {singleProduct.product_amount <= 0
+                  ? "Out of Stock"
+                  : "Add to Cart"}
               </button>
               <button
                 className={`${
-                  singleProduct.product_amount <= 0 
-                    ? "bg-gray-400 cursor-not-allowed filter grayscale" 
+                  singleProduct.product_amount <= 0
+                    ? "bg-gray-400 cursor-not-allowed filter grayscale"
                     : "bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl"
                 } focus:ring-4 focus:outline-none focus:ring-blue-300 h-10 w-28 rounded-md text-l hover:text-l hover:font-bold duration-200`}
                 onClick={handleBuyNow}

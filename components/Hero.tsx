@@ -4,13 +4,14 @@ import { supabase } from "@/lib/supabaseClient";
 import BannerSection from "./BannerSection";
 import RecentProductsShow from "./RecentProductsShow";
 import { User } from "@supabase/supabase-js";
+import { useSession } from "next-auth/react";
 
 
 function Hero() {
   const [user, setUser] = useState<User | null>(null);
   const [customerName, setCustomerName] = useState<string | null>(null);
 
-  
+  const { data: session } = useSession();
 
   useEffect(() => {
     const getUserData = async () => {
@@ -39,15 +40,15 @@ function Hero() {
 
   return (
     <>
-      {user ? (
+        {session ? (
         <p className="text-4xl md:text-6xl font-extrabold text-center pt-20 pb-0 w-full">
           Welcome,{" "}
           <span className="text-indigo-500">
             {customerName // Render customer_name if it exists
               ? customerName
-              : user.user_metadata.name // Otherwise, render user_metadata.name if it exists
-              ? user.user_metadata.name
-              : user.email}{" "}
+              : session.user?.name // Otherwise, render user_metadata.name if it exists
+                ? session.user.name
+              : session.user?.email}{" "}
             {/* Finally, fall back to user.email */}
           </span>
         </p>

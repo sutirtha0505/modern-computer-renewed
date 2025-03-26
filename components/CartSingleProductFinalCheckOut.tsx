@@ -19,13 +19,13 @@ interface ProductData {
   date_applicable: string;
 }
 interface CustomerDetails {
-  customer_name: string;
+  name: string;
   customer_house_no: string;
   customer_house_street: string;
   customer_house_city: string;
   customer_house_pincode: number;
   customer_house_landmark: string;
-  profile_photo: string;
+  image: string;
   email: string;
   phone_no: string;
 }
@@ -103,9 +103,9 @@ const CartSingleProductFinalCheckOut: React.FC<
     const fetchCustomerDetails = async () => {
       try {
         const { data: customerInfo, error } = await supabase
-          .from("profile")
+          .from("users")
           .select(
-            "customer_name, customer_house_no, customer_house_street, customer_house_city, customer_house_pincode, customer_house_landmark, profile_photo, email, phone_no"
+            "name, customer_house_no, customer_house_street, customer_house_city, customer_house_pincode, customer_house_landmark, image, email, phone_no"
           )
           .eq("id", userId)
           .single();
@@ -117,7 +117,7 @@ const CartSingleProductFinalCheckOut: React.FC<
 
         // Check if required fields exist
         if (
-          !customerInfo.customer_name ||
+          !customerInfo.name ||
           !customerInfo.customer_house_no ||
           !customerInfo.customer_house_street ||
           !customerInfo.customer_house_city ||
@@ -125,7 +125,7 @@ const CartSingleProductFinalCheckOut: React.FC<
           !customerInfo.customer_house_landmark ||
           !customerInfo.email ||
           !customerInfo.phone_no ||
-          !customerInfo.profile_photo
+          !customerInfo.image
         ) {
           router.push(`/profile/${userId}`);
         } else {
@@ -221,7 +221,7 @@ const CartSingleProductFinalCheckOut: React.FC<
           }, 3000);
         },
         prefill: {
-          name: customerDetails?.customer_name,
+          name: customerDetails?.name,
           email: customerDetails?.email,
           contact: customerDetails?.phone_no,
         },
