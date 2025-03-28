@@ -69,7 +69,7 @@ const BannerSection: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center bg-amber-200">
+    <div className="flex flex-col items-center">
       {galleryImages.length > 0 && (
         <>
           <div
@@ -80,7 +80,7 @@ const BannerSection: React.FC = () => {
             {galleryImages.map((image, index) => (
               <div
                 key={index}
-                className="absolute top-0 left-0 w-full h-full transition-opacity duration-300 bg-green-300"
+                className="absolute top-0 left-0 w-full h-full transition-opacity duration-300"
                 style={{ opacity: index === currentIndex ? 1 : 0 }}
               >
                 <Image

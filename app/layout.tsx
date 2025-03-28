@@ -1,12 +1,17 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ClientLayout from "../components/ClientLayout";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SessionProviderWrapper } from "@/components/SessionProvderWrapper";
+import dynamic from 'next/dynamic';
 const inter = Inter({ subsets: ["latin"] });
+import { ThemeProvider } from "@/components/theme-provider";
+
+// Dynamically import components that aren't needed immediately
+const ClientLayout = dynamic(() => import('../components/ClientLayout'), {
+  loading: () => <LoadingScreen />
+});
 
 // Define metadata for the entire site
 export const metadata: Metadata = {
@@ -98,16 +103,38 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-[#DFE4E4] dark:bg-black" suppressHydrationWarning>
+    <html lang="en" className="bg-white dark:bg-black" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            try {
+              if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark')
+              } else {
+                document.documentElement.classList.remove('dark')
+              }
+            } catch {}
+          `,
+          }}
+        />
+      </head>
       <body className={inter.className} suppressHydrationWarning>
-        <Suspense fallback={<LoadingScreen />}>
-          <SessionProviderWrapper>
-            <ClientLayout>
-              {children}
-            </ClientLayout>
-          </SessionProviderWrapper>
-          <SpeedInsights />
-        </Suspense>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {/* Show a minimal shell immediately */}
+          <div className="min-h-screen">
+            <Suspense fallback={<LoadingScreen />}>
+              <SessionProviderWrapper>
+                <ClientLayout>{children}</ClientLayout>
+              </SessionProviderWrapper>
+            </Suspense>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

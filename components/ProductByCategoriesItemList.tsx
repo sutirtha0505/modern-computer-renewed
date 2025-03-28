@@ -68,7 +68,7 @@ const ProductByCategoriesItemList: React.FC<ProductListProps> = ({
       );
     } else if (product.product_amount < 5) {
       return (
-        <div className="relative bg-white/50 w-60 h-80 flex flex-col gap-3 p-2 items-center rounded-md custom-backdrop-filter">
+        <div className="relative bg-gray-300 dark:bg-white/50 w-60 h-80 flex flex-col gap-3 p-2 items-center rounded-md custom-backdrop-filter">
           <div className="w-44 h-96 flex items-center overflow-hidden object-fill">
             {productImage && (
               <Image
@@ -85,7 +85,7 @@ const ProductByCategoriesItemList: React.FC<ProductListProps> = ({
           </h1>
           <div className="flex justify-between gap-6">
             <p>&#x20B9;{`${product.product_SP}`}</p>
-            <p className="text-[#b8b4b4] line-through select-none">
+            <p className="text-gray-700 line-through select-none">
               &#x20B9;{`${product.product_MRP}`}
             </p>
           </div>
@@ -102,7 +102,7 @@ const ProductByCategoriesItemList: React.FC<ProductListProps> = ({
       );
     } else {
       return (
-        <div className="relative bg-white/50 w-60 h-80 flex flex-col gap-3 p-2 items-center rounded-md custom-backdrop-filter">
+        <div className="relative bg-gray-300 dark:bg-white/50 w-60 h-80 flex flex-col gap-3 p-2 items-center rounded-md custom-backdrop-filter">
           <div className="w-44 h-96 flex items-center overflow-hidden object-fill">
             {productImage && (
               <Image
@@ -119,7 +119,7 @@ const ProductByCategoriesItemList: React.FC<ProductListProps> = ({
           </h1>
           <div className="flex justify-between gap-6">
             <p>&#x20B9;{`${product.product_SP}`}</p>
-            <p className="text-[#b8b4b4] line-through select-none">
+            <p className="text-gray-700 line-through select-none">
               &#x20B9;{`${product.product_MRP}`}
             </p>
           </div>

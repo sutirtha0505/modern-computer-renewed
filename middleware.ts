@@ -6,6 +6,14 @@ import { supabase } from '@/lib/supabaseClient';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // If the user is trying to access /login or /signup and a session exists, redirect to home.
+  if (pathname.startsWith('/login') || pathname.startsWith('/signup')) {
+    const session = await auth();
+    if (session && session.user && session.user.id) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
   // Checkout route check: allow access only if referer includes '/product/'
   if (pathname.startsWith('/checkout-single-product')) {
     const referer = request.headers.get('referer');
@@ -42,7 +50,6 @@ export async function middleware(request: NextRequest) {
     if (!session || !session.user || !session.user.id) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
-
     // Extract the id from the pathname. Assuming URL structure is: /profile/:userId
     const parts = pathname.split('/');
     const userIdFromUrl = parts[2];
@@ -59,6 +66,8 @@ export const config = {
   matcher: [
     '/checkout-single-product/:path*',
     '/admin/:path*',
-    '/profile/:path*'
+    '/profile/:path*',
+    '/login/:path*',
+    '/signup/:path*'
   ]
 };

@@ -16,15 +16,16 @@ const CustomerReview: React.FC = () => {
   const [rating, setRating] = useState<number>(0);
   const [resetRating, setResetRating] = useState<boolean>(false);
 
+  // Update user if session is available
   useEffect(() => {
-    const getUserData = async () => {
-      if (session) {
-        setUser(session.user as User);
-        setLoading(false);
-      }
-    };
+    if (session) {
+      setUser(session.user as User);
+    }
+  }, [session]);
 
-    getUserData();
+  // Mark loading as false when the component mounts (i.e. when the UI renders)
+  useEffect(() => {
+    setLoading(false);
   }, []);
 
   const handleResetRating = () => {
@@ -44,8 +45,20 @@ const CustomerReview: React.FC = () => {
 
   return (
     <div className='w-full h-full gap-0 md:gap-10 text-center flex justify-center items-center flex-col pb-28 lg:pb-0'>
-      <ToastContainer position="bottom-center" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-      <h1 className='font-bold text-3xl'>Share <span className='text-indigo-600'>Your Experience</span> with Us</h1>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <h1 className='font-bold text-3xl'>
+        Share <span className='text-indigo-600'>Your Experience</span> with Us
+      </h1>
       <div className='flex gap-4 justify-center items-center flex-wrap'>
         <Image 
           src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Review/bendy-person-rates-a-product-or-service.gif" 
@@ -62,6 +75,6 @@ const CustomerReview: React.FC = () => {
       </div>
     </div>
   );
-}
+};
 
 export default CustomerReview;
