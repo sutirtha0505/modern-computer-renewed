@@ -61,6 +61,10 @@ const BannerSection: React.FC = () => {
     };
   }, [galleryImages]);
 
+  useEffect(() => {
+    startAutoplay();
+  }, [startAutoplay]);
+
   const handleDotClick = (index: number) => {
     setCurrentIndex(index);
     // Restart autoplay after manual change

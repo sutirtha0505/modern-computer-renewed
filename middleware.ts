@@ -6,8 +6,8 @@ import { supabase } from '@/lib/supabaseClient';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // If the user is trying to access /login or /signup and a session exists, redirect to home.
-  if (pathname.startsWith('/login') || pathname.startsWith('/signup')) {
+  // If the user is trying to access /login and a session exists, redirect to home.
+  if (pathname.startsWith('/login')) {
     const session = await auth();
     if (session && session.user && session.user.id) {
       return NextResponse.redirect(new URL('/', request.url));
@@ -67,7 +67,6 @@ export const config = {
     '/checkout-single-product/:path*',
     '/admin/:path*',
     '/profile/:path*',
-    '/login/:path*',
-    '/signup/:path*'
+    '/login/:path*'
   ]
 };

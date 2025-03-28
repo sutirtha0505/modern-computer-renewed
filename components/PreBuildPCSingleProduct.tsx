@@ -6,13 +6,14 @@ import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 import SinglePBPCProductReviews from "./SinglePBPCProductReviews";
 import CharacterCounterInputForPBPCProduct from "./CharacterCounterInputForPBPCProduct";
 import RatingForPBPCProduct from "./RatingForPBPCProduct";
-import { User } from "@supabase/supabase-js";
 import { useSession } from "next-auth/react";
+import { User } from "@supabase/supabase-js";
 
 interface Product {
   id: string;
@@ -42,18 +43,14 @@ interface ProductItem {
 interface ProductImage {
   url: string; // Assuming `url` is the property being used
 }
-
-interface PreBuildPCSingleProductProps {
-  id: string;
-}
-
-const PreBuildPCSingleProduct: React.FC<PreBuildPCSingleProductProps> = ({ id }) => {
-  const { data: session } = useSession();
+const PreBuildPCSingleProduct: React.FC = () => {
+  const { id } = useParams();
   const [isHeartFilled, setIsHeartFilled] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false); // New state for mounted check
+  const { data: session } = useSession();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [rating, setRating] = useState<number>(0);
@@ -174,13 +171,12 @@ const PreBuildPCSingleProduct: React.FC<PreBuildPCSingleProductProps> = ({ id })
     const fetchUserData = async () => {
       if (session) {
         setUser(session.user as User);
-        setLoading(false);
       }
     };
-
+    setLoading(false);
     
     fetchUserData();
-  }, [id]);
+  }, [id, session]);
 
   useEffect(() => {
     const fetchAverageRating = async () => {

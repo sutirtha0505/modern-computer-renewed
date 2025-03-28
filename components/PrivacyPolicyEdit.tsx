@@ -222,7 +222,7 @@ const PrivacyPolicyEdit = () => {
       console.error("Error fetching last entry:", error);
       toast.error("Failed to fetch previous data");
     }
-  }, []);
+  }, [privacyEditor, refundEditor, shippingEditor, termsEditor]);
 
   useEffect(() => {
     fetchLastEntry();

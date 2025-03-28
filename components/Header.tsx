@@ -7,7 +7,6 @@ import {
   CircleUser,
   LucideLogIn,
   Search,
-  UserPlus,
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
@@ -17,7 +16,6 @@ import { getCart } from "@/redux/cartSlice";
 import { supabase } from "@/lib/supabaseClient";
 import "@/app/globals.css";
 import { useSession } from "next-auth/react";
-import { getSupabaseClient } from "@/lib/supabase";
 
 interface Product {
   product_id: string;
@@ -495,19 +493,6 @@ const Header = () => {
                           onClick={(e) => e.stopPropagation()}
                         >
                           LogIn
-                        </Link>
-                      </div>
-                      <div
-                        className="flex justify-start gap-3 px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/30 hover:rounded-md"
-                        onClick={() => router.push("/signup")}
-                      >
-                        <UserPlus className="text-emerald-400" />
-                        <Link
-                          href="/signup"
-                          className="text-white cursor-pointer hover:text-emerald-400"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          SignUp
                         </Link>
                       </div>
                     </>

@@ -15,20 +15,19 @@ function Hero() {
 
   useEffect(() => {
     const getUserData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+      if (session) {
+        setUser(session.user as User);
+      }
 
       if (user) {
         const { data: profile } = await supabase
-          .from("profile")
-          .select("customer_name")
+          .from("users")
+          .select("name")
           .eq("id", user.id)
           .single();
 
         if (profile) {
-          setCustomerName(profile.customer_name); // Set customer name if it exists
+          setCustomerName(profile.name); // Set customer name if it exists
         }
         // else if (error) {
         //   console.error("Error fetching profile:", error);
@@ -36,7 +35,7 @@ function Hero() {
       }
     };
     getUserData();
-  }, []);
+  }, [session, user]);
 
   return (
     <>

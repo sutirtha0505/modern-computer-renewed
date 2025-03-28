@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     'Affordable Gaming PC'
   ],
   alternates: {
-    canonical: 'https://moderncomputer.vercel.app/pbpc/pbpc-amd',
+    canonical: 'https://moderncomputer.in/pbpc/pbpc-amd',
   },
   robots: {
     index: true,
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
-  authors: [{ name: 'Modern Computer Team', url: 'https://moderncomputer.vercel.app/about' }],
+  authors: [{ name: 'Modern Computer Team', url: 'https://moderncomputer.in/about' }],
   publisher: 'Modern Computer Belgharia',
   openGraph: {
     title: 'AMD Pre-Built Gaming PCs | Modern Computer',
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
 
 const PreBuildAMDPC = () => {
   return (
-    <div className='pt-16 w-full h-full justify-center items-center flex flex-col gap-6'>
+    <div className='pt-16 w-full h-full min-h-screen justify-center items-center flex flex-col gap-6'>
       <h1 className='p-5 text-2xl text-center font-extrabold'>Choose Your favourite <span className='text-orange-400'>Pre-Build <span className='text-indigo-500'>AMD</span> </span> PC </h1>
       <PBPCAMDDisplay />
     </div>

@@ -2,7 +2,6 @@
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import CharacterCounterInput from './CharacterCounterInput';
-import { supabase } from '@/lib/supabaseClient';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Rating from './Rating';

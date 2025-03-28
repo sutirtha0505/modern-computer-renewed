@@ -1,27 +1,22 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import OrdersForU from '@/components/OrdersForU';
 import { useSession } from 'next-auth/react';
+import LoadingScreen from '@/components/LoadingScreen';
 const OrdersPage = () => {
   const { data: session } = useSession()
     const [loading, setLoading] = useState<boolean>(true);
-    const [loadingTime, setLoadingTime] = useState<number | null>(null);
-    const router = useRouter();
 
     useEffect(() => {
-      const startTime = performance.now();
       // Simulate loading work (for example, fetching admin data)
       // Replace the setTimeout with your actual data fetching if needed
       setTimeout(() => {
-        const endTime = performance.now();
-        setLoadingTime(endTime - startTime);
         setLoading(false);
       }, 8000); // simulate a 1 second loading delay
     }, []);
     
       if (loading) {
-        return <div>Loading...</div>;
+        return <div><LoadingScreen /></div>;
       }
     
     

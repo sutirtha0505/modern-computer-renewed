@@ -75,7 +75,7 @@ const UserProfile = () => {
     };
 
     fetchUserData();
-  }, [id, router]);
+  }, [id, router, session]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setProfilePhoto(acceptedFiles[0]);

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/auth"; // using our server-side signIn function
+import Image from 'next/image'
 
 // Server action for Google OAuth.
 async function handleGoogleSignIn() {
@@ -89,18 +90,15 @@ export default function LoginForm({
                   <span className="sr-only">Login with Meta</span>
                 </Button>
               </div>
-              <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <a href="/signup" className="underline underline-offset-4">
-                  Sign up
-                </a>
-              </div>
             </div>
           </div>
           <div className="bg-muted relative hidden md:block">
-            <img
+            <Image 
               src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/About/Logo.gif"
+              unoptimized
               alt="Image"
+              width={500}
+              height={300}
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />
           </div>

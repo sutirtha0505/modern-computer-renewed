@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react'
 import HeaderCart from './HeaderCart'
 import CustomerDetails from './CustomerDetails'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import PreBuildSingleProductFinalCheckOut from './PreBuildSingleProductFinalCheckOut'
 import { User } from '@supabase/supabase-js'

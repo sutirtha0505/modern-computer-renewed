@@ -15,7 +15,7 @@ const ClientLayout = dynamic(() => import('../components/ClientLayout'), {
 
 // Define metadata for the entire site
 export const metadata: Metadata = {
-  metadataBase: new URL("https://moderncomputer.vercel.app"),
+  metadataBase: new URL("https://moderncomputer.in"),
   title: {
     template: "%s | Modern Computer Belgharia",
     default:
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   authors: [
     {
       name: "Modern Computer Team",
-      url: "https://moderncomputer.vercel.app/about",
+      url: "https://moderncomputer.in/about",
     },
   ],
   publisher: "Modern Computer Belgharia",
@@ -52,12 +52,12 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://moderncomputer.vercel.app",
+    canonical: "https://moderncomputer.in",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://moderncomputer.vercel.app",
+    url: "https://moderncomputer.in",
     siteName: "Modern Computer Belgharia",
     title:
       "Modern Computer Belgharia - High-Performance Custom PCs & Components",

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     'Belgharia PC Builder'
   ],
   alternates: {
-    canonical: 'https://moderncomputer.vercel.app/cbpc/cbpc-amd',
+    canonical: 'https://moderncomputer.in/cbpc/cbpc-amd',
   },
   robots: {
     index: true,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
-  authors: [{ name: 'Modern Computer Team', url: 'https://moderncomputer.vercel.app/about' }],
+  authors: [{ name: 'Modern Computer Team', url: 'https://moderncomputer.in/about' }],
   publisher: 'Modern Computer Belgharia',
   openGraph: {
     title: 'Build Your Custom AMD PC | Modern Computer',

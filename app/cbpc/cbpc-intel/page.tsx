@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     'Belgharia PC Builder'
   ],
   alternates: {
-    canonical: 'https://moderncomputer.vercel.app/cbpc/cbpc-intel',
+    canonical: 'https://moderncomputer.in/cbpc/cbpc-intel',
   },
   robots: {
     index: true,
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
-  authors: [{ name: 'Modern Computer Team', url: 'https://moderncomputer.vercel.app/about' }],
+  authors: [{ name: 'Modern Computer Team', url: 'https://moderncomputer.in/about' }],
   publisher: 'Modern Computer Belgharia',
   openGraph: {
     title: 'Build Your Custom Intel PC | Modern Computer',
