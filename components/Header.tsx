@@ -173,25 +173,16 @@ const Header = () => {
   // Fetch user data from the "users" table using your custom auth() and getSupabaseClient
   useEffect(() => {
     const getUserData = async () => {
-      if (!session) {
-        console.error("No session available");
-        return;
-      }
+      
       // Here, assume the session object has an accessToken property.
       // If not, adjust accordingly (e.g., include it in the session callback).
       const userId = session?.user?.id;
-      console.log(userId);
-      if (!userId) {
-        console.error("No user id found in session");
-        return;
-      }
+      
       const { data: userData, error } = await supabase
         .from("users")
         .select("role, name, image, id, email")
         .eq("id", userId)
         .single();
-      console.log("Query result:", { userData, error });
-      console.log(userId);
 
       if (userData) {
         setUserProfile(userData);
