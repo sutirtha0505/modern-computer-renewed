@@ -178,7 +178,7 @@ const Header = () => {
       // If not, adjust accordingly (e.g., include it in the session callback).
       const userId = session?.user?.id;
       
-      const { data: userData, error } = await supabase
+      const { data: userData,  } = await supabase
         .from("users")
         .select("role, name, image, id, email")
         .eq("id", userId)

@@ -57,6 +57,7 @@
     "redux-persist": "^6.0.0",
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^3.0.2",
+    "tailwind-scrollbar-hide": "^2.0.0",
     "tw-animate-css": "^1.2.4",
     "uuid": "^11.1.0",
     "vanilla-tilt": "^1.8.1"

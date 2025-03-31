@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabaseClient";
 import SingleProductReviews from "./SingleProductReviews";
 import { User } from "@supabase/supabase-js";
 import { useSession } from "next-auth/react";
+import LoadingScreen from "./LoadingScreen";
 
 interface SingleProduct {
   product_id: string;
@@ -125,9 +126,11 @@ const SingleProduct = ({
     const fetchUserData = async () => {
       if (session) {
         setUser(session.user as User);
-        setLoading(false);
       }
     };
+    
+    
+    setLoading(false);
 
 
     const fetchAverageRating = async () => {
@@ -176,7 +179,7 @@ const SingleProduct = ({
 
   // Loading state handling
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
 
   // Handle case where singleProduct is not available
