@@ -1,63 +1,58 @@
-import { Metadata, ResolvingMetadata } from 'next';
+import type { Metadata, ResolvingMetadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import ProductClient from './ProductClient';
 
+// Define types so that params is a Promise for both metadata and the page.
 type Props = {
-  params: { product_id: string }
-  searchParams: { [key: string]: string | string[] | undefined }
-}
+  params: Promise<{ product_id: string }>;
+};
 
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  // Fetch product data
+  // Await the params to extract the product_id
+  const { product_id } = await params;
+
+  // Fetch product data from Supabase
   const { data: product } = await supabase
     .from('products')
     .select('*')
-    .eq('product_id', params.product_id)
+    .eq('product_id', product_id)
     .single();
 
-  // Optionally access and extend parent metadata
+  // Optionally merge with parent Open Graph images.
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: product ? `${product.product_name} | Modern Computer` : 'Product | Modern Computer',
-    description: product?.product_description || 'Explore our amazing product collection',
-    keywords: [`${product?.product_name}`, 'modern computer', 'electronics', 'online shopping', 'best price', 'deals'],
-    authors: [{ name: 'Modern Computer' }],
-    publisher: 'Modern Computer',
-    robots: {
-      index: true,
-      follow: true,
-    },
+    title: product
+      ? `${product.product_name} | Modern Computer`
+      : 'Product | Modern Computer',
+    description:
+      product?.product_description || 'Explore our amazing product collection',
     openGraph: {
       title: product?.product_name,
       description: product?.product_description,
-      images: product?.product_image?.[0]?.url 
+      images: product?.product_image?.[0]?.url
         ? [product.product_image[0].url, ...previousImages]
         : previousImages,
       type: 'website',
       siteName: 'Modern Computer',
     },
-    twitter: {
-      card: 'summary_large_image',
-      title: product?.product_name,
-      description: product?.product_description,
-      images: product?.product_image?.[0]?.url ? [product.product_image[0].url] : [],
-    },
-    alternates: {
-      canonical: `https://moderncomputer.in/product/${params.product_id}`,
-    },
+    // You can add additional metadata fields as needed.
   };
 }
 
-export default async function Page({ params }: { params: { product_id: string } }) {
-  // Server-side data fetching for initial data
+// For the Page component, the props type is identical
+export default async function Page({ params }: Props) {
+  // Await the params to get the product_id
+  const { product_id } = await params;
+
+  // Fetch product data for rendering the page UI
   const { data: initialProduct } = await supabase
     .from('products')
     .select('*')
-    .eq('product_id', params.product_id)
+    .eq('product_id', product_id)
     .single();
 
   return <ProductClient initialProduct={initialProduct} />;
