@@ -148,8 +148,6 @@ body {
   cursor: pointer;
   border-radius: 20px;
   padding: 0 10px 0 10px;
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
 }
 
 .cards .card {

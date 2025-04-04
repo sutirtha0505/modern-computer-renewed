@@ -103,7 +103,7 @@ const BestSellerSlider = () => {
 
             <div className="cards">
               {products.length >= 1 && (
-                <label htmlFor="s1" id="slide1">
+                <label htmlFor="s1" id="slide1" className="bg-gray-400 dark:bg-[#10172B]">
                   <div className="card">
                     <Image
                       src={getProductImage(products[0].product_image)}
@@ -127,7 +127,7 @@ const BestSellerSlider = () => {
               )}
 
               {products.length >= 2 && (
-                <label htmlFor="s2" id="slide2">
+                <label htmlFor="s2" id="slide2" className="bg-gray-400 dark:bg-[#10172B]">
                   <div className="card">
                     <Image
                       src={getProductImage(products[1].product_image)}
@@ -151,7 +151,7 @@ const BestSellerSlider = () => {
               )}
 
               {products.length >= 3 && (
-                <label htmlFor="s3" id="slide3">
+                <label htmlFor="s3" id="slide3" className="bg-gray-400 dark:bg-[#10172B]">
                   <div className="card">
                     <Image
                       src={getProductImage(products[2].product_image)}
@@ -175,7 +175,7 @@ const BestSellerSlider = () => {
               )}
 
               {products.length >= 4 && (
-                <label htmlFor="s4" id="slide4">
+                <label htmlFor="s4" id="slide4" className="bg-gray-400 dark:bg-[#10172B]">
                   <div className="card">
                     <Image
                       src={getProductImage(products[3].product_image)}
@@ -199,7 +199,7 @@ const BestSellerSlider = () => {
               )}
 
               {products.length >= 5 && (
-                <label htmlFor="s5" id="slide5">
+                <label htmlFor="s5" id="slide5" className="bg-gray-400 dark:bg-[#10172B]">
                   <div className="card">
                     <Image
                       src={getProductImage(products[4].product_image)}
@@ -223,7 +223,7 @@ const BestSellerSlider = () => {
               )}
 
               {products.length >= 6 && (
-                <label htmlFor="s6" id="slide6">
+                <label htmlFor="s6" id="slide6" className="bg-gray-400 dark:bg-[#10172B]">
                   <div className="card">
                     <Image
                       src={getProductImage(products[5].product_image)}
@@ -247,7 +247,7 @@ const BestSellerSlider = () => {
               )}
 
               {products.length >= 7 && (
-                <label htmlFor="s7" id="slide7">
+                <label htmlFor="s7" id="slide7" className="bg-gray-400 dark:bg-[#10172B]">
                   <div className="card">
                     <Image
                       src={getProductImage(products[6].product_image)}
