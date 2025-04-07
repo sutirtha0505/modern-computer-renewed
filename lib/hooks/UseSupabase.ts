@@ -27,21 +27,49 @@ export const UseSupabase = () => {
   };
 
   const getFilterData = async (query: string) => {
-    const decodedQuery = decodeURIComponent(query); // Decode the URL-encoded query string
-    const { data, error } = await supabase
+    const decodedQuery = decodeURIComponent(query).trim();
+    if (!decodedQuery) {
+      setFilterData([]);
+      return;
+    }
+  
+    // First: check for an exact (case-insensitive) match in the product_category
+    const { data: categoryData, error: categoryError } = await supabase
       .from("products")
       .select("*")
-      .or(
-        `product_name.ilike.%${decodedQuery}%, product_description.ilike.%${decodedQuery}%, product_category.ilike.%${decodedQuery}%`
-      );
-    if (data) {
-      setFilterData(data);
-      console.log(data);
+      .ilike("product_category", decodedQuery);
+  
+    if (categoryError) {
+      console.error("Category search error:", categoryError);
     }
-    if (error) {
-      console.log(error);
+  
+    // Filter to ensure an exact match on the category value
+    const exactCategoryMatch = categoryData?.filter(product =>
+      product.product_category?.toLowerCase() === decodedQuery.toLowerCase()
+    );
+  
+    if (exactCategoryMatch && exactCategoryMatch.length > 0) {
+      setFilterData(exactCategoryMatch);
+      console.log(exactCategoryMatch);
+      return;
+    }
+  
+    // Otherwise: search for partial matches in the product_name
+    const { data: nameData, error: nameError } = await supabase
+      .from("products")
+      .select("*")
+      .ilike("product_name", `%${decodedQuery}%`);
+  
+    if (nameError) {
+      console.error("Name search error:", nameError);
+    }
+  
+    if (nameData) {
+      setFilterData(nameData);
+      console.log(nameData);
     }
   };
+
 
   const getSingleProduct = async (product_id: string) => {
     try {
