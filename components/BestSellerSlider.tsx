@@ -103,7 +103,7 @@ const BestSellerSlider = () => {
 
             <div className="cards">
               {products.length >= 1 && (
-                <label htmlFor="s1" id="slide1" className="bg-gray-400 dark:bg-[#10172B]">
+                <label htmlFor="s1" id="slide1" className="bg-gray-200 dark:bg-[#10172B]">
                   <div className="card">
                     <Image
                       src={getProductImage(products[0].product_image)}

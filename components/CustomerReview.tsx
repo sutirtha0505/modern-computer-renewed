@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Rating from './Rating';
 import { User } from '@supabase/supabase-js';
 import { useSession } from 'next-auth/react';
+import LoadingScreen from './LoadingScreen';
 
 const CustomerReview: React.FC = () => {
   const { data: session } = useSession();
@@ -39,7 +40,7 @@ const CustomerReview: React.FC = () => {
   }, [resetRating]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
 
   return (

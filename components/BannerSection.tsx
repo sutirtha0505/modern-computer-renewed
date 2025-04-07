@@ -1,52 +1,58 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const BannerSection: React.FC = () => {
-  const [galleryImages, setGalleryImages] = useState<{ name: string; url: string }[]>([]);
+  const [galleryImages, setGalleryImages] = useState<
+    { name: string; url: string; product_link: string }[]
+  >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const delay = 4000;
+  const router = useRouter();
 
+  // Fetch images from the offer_banner table
   const fetchGalleryImages = async () => {
-    const { data, error } = await supabase.storage
-      .from("product-image")
-      .list("banners", { limit: 100 });
-
+    const { data, error } = await supabase
+      .from("offer_banner")
+      .select("image_url, product_link");
     if (error) {
       console.error("Error fetching gallery images:", error);
       return;
     }
-
     if (data) {
-      const imageUrls = data.map((file) => {
-        const { data: publicUrlData } = supabase.storage
-          .from("product-image")
-          .getPublicUrl(`banners/${file.name}`);
-        const publicUrl = publicUrlData.publicUrl;
-        return { name: file.name, url: publicUrl };
-      });
+      const imageUrls = data.map(
+        (row: { image_url: string; product_link: string }) => ({
+          name: row.image_url, // Using image_url as the image name
+          url: row.image_url,
+          product_link: row.product_link,
+        })
+      );
       setGalleryImages(imageUrls);
     }
   };
 
   // Start the autoplay interval
-  const startAutoplay = () => {
+  const startAutoplay = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
     intervalRef.current = setInterval(() => {
       setCurrentIndex((prevIndex) =>
-        galleryImages.length ? (prevIndex + 1) % galleryImages.length : 0
+        galleryImages.length > 0 ? (prevIndex + 1) % galleryImages.length : 0
       );
     }, delay);
-  };
+  }, [galleryImages]);
 
   // Stop the autoplay interval
-  const stopAutoplay = () => {
+  const stopAutoplay = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchGalleryImages();
@@ -59,15 +65,10 @@ const BannerSection: React.FC = () => {
     return () => {
       stopAutoplay();
     };
-  }, [galleryImages]);
-
-  useEffect(() => {
-    startAutoplay();
-  }, [startAutoplay]);
+  }, [galleryImages, startAutoplay, stopAutoplay]);
 
   const handleDotClick = (index: number) => {
     setCurrentIndex(index);
-    // Restart autoplay after manual change
     stopAutoplay();
     startAutoplay();
   };
@@ -90,11 +91,13 @@ const BannerSection: React.FC = () => {
                 <Image
                   src={image.url}
                   alt={image.name}
-                  layout="fill"
-                  objectFit="contain"
-                  objectPosition="center"
-                  className="w-full h-full rounded-lg shadow-lg"
+                  fill
+                  style={{ objectFit: "contain", objectPosition: "center" }}
+                  className="w-full h-full rounded-lg shadow-lg cursor-pointer"
                   priority
+                  onClick={() => {
+                    router.push(image.product_link);
+                  }}
                 />
               </div>
             ))}

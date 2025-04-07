@@ -41,8 +41,8 @@ const Footer = () => {
   }, []);
   return (
     <div className="w-full pt-5 mb-16 md:mb-0 flex flex-col gap-4 justify-center bg-slate-300 dark:bg-slate-900">
-      <div className="flex justify-between items-center px-7 flex-wrap">
-        <div className="flex flex-col gap-4 justify-center items-start">
+      <div className="flex sm:justify-between sm:gap-0 gap-8 justify-center sm:items-start items-center px-7 flex-wrap">
+        <div className="flex flex-col gap-4 justify-center items-center sm:items-start">
           <div className="flex gap-4 items-center justify-center">
             <Image
               src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/About/Logo.gif"
@@ -194,10 +194,10 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className="flex w-full justify-between items-center p-7 flex-wrap bg-slate-600 dark:bg-slate-700">
+      <div className="flex w-full sm:justify-between justify-center items-center p-7 flex-wrap bg-slate-600 dark:bg-slate-700">
         <h1 className="text-sm md:text-lg font-bold text-center">
           All Rights Reseved by{" "}
-          <span className="text-indigo-500">&copy;Modern Computer</span>, 2024
+          <span className="text-indigo-400">&copy;Modern Computer</span>, 2024
         </h1>
         <div className="flex gap-3 justify-center items-center">
           <Image src="/Visa.png" width={50} height={50} alt="Visa" />
