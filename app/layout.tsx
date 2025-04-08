@@ -7,6 +7,7 @@ import { SessionProviderWrapper } from "@/components/SessionProvderWrapper";
 import dynamic from "next/dynamic";
 import { ThemeProvider } from "@/components/theme-provider";
 import AutoFullscreen from "@/components/AutoFullScreen";
+import HydrationContainer from "@/components/HydrationContainer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -110,14 +111,14 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-            try {
-              if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark')
-              } else {
-                document.documentElement.classList.remove('dark')
-              }
-            } catch {}
-          `,
+              try {
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark')
+                } else {
+                  document.documentElement.classList.remove('dark')
+                }
+              } catch {}
+            `,
           }}
         />
       </head>
@@ -131,11 +132,14 @@ export default function RootLayout({
           {/* Using alert to prompt for fullscreen mode */}
           <AutoFullscreen />
           <div className="min-h-screen">
-            <Suspense fallback={<LoadingScreen />}>
-              <SessionProviderWrapper>
-                <ClientLayout>{children}</ClientLayout>
-              </SessionProviderWrapper>
-            </Suspense>
+            {/* Wrap the client-side rendered content with HydrationContainer */}
+            <HydrationContainer>
+              <Suspense fallback={<LoadingScreen />}>
+                <SessionProviderWrapper>
+                  <ClientLayout>{children}</ClientLayout>
+                </SessionProviderWrapper>
+              </Suspense>
+            </HydrationContainer>
           </div>
         </ThemeProvider>
       </body>
