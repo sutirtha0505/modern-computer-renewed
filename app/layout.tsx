@@ -4,13 +4,15 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { SessionProviderWrapper } from "@/components/SessionProvderWrapper";
-import dynamic from 'next/dynamic';
-const inter = Inter({ subsets: ["latin"] });
+import dynamic from "next/dynamic";
 import { ThemeProvider } from "@/components/theme-provider";
+import AutoFullscreen from "@/components/AutoFullScreen";
+
+const inter = Inter({ subsets: ["latin"] });
 
 // Dynamically import components that aren't needed immediately
-const ClientLayout = dynamic(() => import('../components/ClientLayout'), {
-  loading: () => <LoadingScreen />
+const ClientLayout = dynamic(() => import("../components/ClientLayout"), {
+  loading: () => <LoadingScreen />,
 });
 
 // Define metadata for the entire site
@@ -99,9 +101,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" className="bg-white dark:bg-black" suppressHydrationWarning>
       <head>
@@ -126,7 +128,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Show a minimal shell immediately */}
+          {/* Using alert to prompt for fullscreen mode */}
+          <AutoFullscreen />
           <div className="min-h-screen">
             <Suspense fallback={<LoadingScreen />}>
               <SessionProviderWrapper>
