@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-// Import shadcn's alert dialog components. Adjust the import path based on your project setup.
+import { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +12,18 @@ import {
 
 export default function AutoFullScreen() {
   const [open, setOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Basic mobile detection using navigator.userAgent.
+    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    setIsMobile(mobileRegex.test(navigator.userAgent));
+  }, []);
+
+  // If not a mobile device, render nothing.
+  if (!isMobile) {
+    return null;
+  }
 
   const handleEnterFullscreen = async () => {
     try {

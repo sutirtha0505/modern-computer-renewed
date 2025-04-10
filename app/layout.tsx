@@ -130,7 +130,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {/* Using alert to prompt for fullscreen mode */}
-          <AutoFullscreen />
+            <AutoFullscreen />
           <div className="min-h-screen">
             {/* Wrap the client-side rendered content with HydrationContainer */}
             <HydrationContainer>

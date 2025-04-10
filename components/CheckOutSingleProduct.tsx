@@ -7,6 +7,8 @@ import CartSingleProductFinalCheckOut from "./CartSingleProductFinalCheckOut";
 import { User } from "@supabase/supabase-js";
 import { useSession } from "next-auth/react";
 
+import LoadingScreen from "./LoadingScreen";
+
 const CheckOutSingleProduct = () => {
   const { data: session } = useSession();
   const [user, setUser] = useState<User | null>(null);
@@ -33,7 +35,7 @@ const CheckOutSingleProduct = () => {
 
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
 
   return (

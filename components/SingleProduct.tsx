@@ -16,6 +16,7 @@ import SingleProductReviews from "./SingleProductReviews";
 import { User } from "@supabase/supabase-js";
 import { useSession } from "next-auth/react";
 import LoadingScreen from "./LoadingScreen";
+import SimilarProducts from "./SimilarProducts";
 
 interface SingleProduct {
   product_id: string;
@@ -321,6 +322,7 @@ const SingleProduct = ({
           </div>
         </div>
         <ToastContainer position="bottom-center" />
+        <SimilarProducts singleProduct={singleProduct} />
         <div className="flex flex-col justify-center items-center gap-4 pb-8">
           <h1 className="font-bold text-xl text-center">
             Want to say something about{" "}

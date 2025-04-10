@@ -1,0 +1,11 @@
+.embla__slide {
+  flex: 0 0 100%; /* Default for smaller screens */
+  margin-right: 5px;
+}
+
+@media (min-width: 768px) {
+  .embla__slide {
+    flex: 0 0 50%; /* For screens wider than 768px */
+    margin-right: 10px;
+  }
+}
