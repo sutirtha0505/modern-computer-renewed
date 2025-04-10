@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import LoadingScreen from "./LoadingScreen";
 const UserProfile = () => {
   const { data: session } = useSession();
   const params = useParams();
@@ -140,7 +141,7 @@ const UserProfile = () => {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="flex flex-col relative items-center justify-center">
@@ -200,7 +201,7 @@ const UserProfile = () => {
             type="text"
             value={email || ""}
             readOnly
-            className="border-b bg-transparent text-white p-2 w-full outline-none cursor-not-allowed"
+            className="border-b bg-transparent text-black dark:text-white p-2 w-full outline-none cursor-not-allowed"
           />
         </div>
         <div className="w-full">
@@ -222,7 +223,7 @@ const UserProfile = () => {
             type="text"
             value={name || ""}
             onChange={(e) => setName(e.target.value)}
-            className="border-b bg-transparent text-white p-2 w-full outline-none"
+            className="border-b bg-transparent text-black dark:text-white p-2 w-full outline-none"
             required
           />
         </div>
@@ -245,7 +246,7 @@ const UserProfile = () => {
             value={phoneNo || ""}
             onChange={(e) => setPhoneNo(e.target.value)}
             required
-            className="border-b bg-transparent text-white p-2 w-full outline-none"
+            className="border-b bg-transparent text-black dark:text-white p-2 w-full outline-none"
           />
         </div>
         <div className="flex gap-2 w-full">
@@ -267,7 +268,7 @@ const UserProfile = () => {
               type="text"
               value={houseNo || ""}
               onChange={(e) => setHouseNo(e.target.value)}
-              className="border-b bg-transparent text-white p-2 w-full outline-none"
+              className="border-b bg-transparent text-black dark:text-white p-2 w-full outline-none"
               required
             />
           </div>
@@ -290,7 +291,7 @@ const UserProfile = () => {
               value={streetName || ""}
               onChange={(e) => setStreetName(e.target.value)}
               required
-              className="border-b bg-transparent text-white p-2 w-full outline-none"
+              className="border-b bg-transparent text-black dark:text-white p-2 w-full outline-none"
             />
           </div>
         </div>
@@ -313,7 +314,7 @@ const UserProfile = () => {
               type="text"
               value={landmark || ""}
               onChange={(e) => setLandmark(e.target.value)}
-              className="border-b bg-transparent text-white p-2 w-full outline-none"
+              className="border-b bg-transparent text-black dark:text-white p-2 w-full outline-none"
               required
             />
           </div>
@@ -336,7 +337,7 @@ const UserProfile = () => {
               value={city || ""}
               onChange={(e) => setCity(e.target.value)}
               required
-              className="border-b bg-transparent text-white p-2 w-full outline-none"
+              className="border-b bg-transparent text-black dark:text-white p-2 w-full outline-none"
             />
           </div>
           <div className="w-1/3">
@@ -358,10 +359,12 @@ const UserProfile = () => {
               value={pinCode || ""}
               onChange={(e) => setPinCode(e.target.value)}
               required
-              className="border-b bg-transparent text-white p-2 w-full outline-none"
+              className="border-b bg-transparent text-black dark:text-white p-2 w-full outline-none"
             />
           </div>
         </div>
+        <p className="font-bold text-xs">* You must have to upload your image</p>
+
         <button
           onClick={handleSave}
           className="bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 h-10 w-28 rounded-md text-l hover:text-l hover:font-bold duration-200"

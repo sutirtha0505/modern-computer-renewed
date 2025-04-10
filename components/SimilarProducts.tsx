@@ -4,6 +4,9 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import useEmblaCarousel from 'embla-carousel-react';
+import AutoScroll from 'embla-carousel-auto-scroll';
+import LoadingScreen from "./LoadingScreen";
 
 interface SingleProduct {
   product_id: string;
@@ -42,15 +45,93 @@ const SimilarProducts: React.FC<SimilarProductsProps> = ({ singleProduct }) => {
   const router = useRouter();
   const [similarProducts, setSimilarProducts] = useState<FetchedProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(1); // start at 1 (first real slide)
-  const [transitionEnabled, setTransitionEnabled] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [slideWidth, setSlideWidth] = useState(300);
+  const [slideHeight, setSlideHeight] = useState(384);
 
-  const slideWidth = 384;
-  const slideHeight = 384;
-  const gap = 16;
+  // Get the appropriate scroll speed based on device width
+  const getScrollSpeed = useCallback(() => {
+    const width = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    
+    // Set scroll speed based on device width (lower values = faster scrolling)
+    if (width < 640) { // Mobile phone
+      return 10; 
+    } else if (width < 1024) { // Tablet
+      return 100;
+    } else { // Desktop
+      return 1000;
+    }
+  }, []);
 
-  const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
-  const isHovered = useRef(false);
+  const [scrollSpeed, setScrollSpeed] = useState(1000);
+  
+  // Embla carousel setup with AutoScroll plugin
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { 
+      loop: true,
+      align: 'start',
+      slidesToScroll: 1,
+      dragFree: true,
+    },
+    [
+      AutoScroll({ 
+        speed: scrollSpeed / 500, // Increased speed factor (was /10000)
+        direction: 'forward',
+        stopOnInteraction: true,
+        stopOnMouseEnter: true,
+        rootNode: (emblaRoot: HTMLElement) => emblaRoot
+      })
+    ]
+  );
+
+  // Scroll to previous slide
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+  
+  // Scroll to next slide
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  // Update responsive dimensions and scroll speed
+  useEffect(() => {
+    const updateResponsiveness = () => {
+      const width = window.innerWidth;
+      
+      // Update scroll speed
+      const newScrollSpeed = getScrollSpeed();
+      setScrollSpeed(newScrollSpeed);
+      
+      // Update dimensions based on screen size
+      if (width < 640) { // Small mobile
+        setSlideWidth(width - 40); // Full width minus padding
+        setSlideHeight(300);
+        setIsMobile(true);
+      } else if (width < 768) { // Mobile
+        setSlideWidth((width - 40 - 16) / 2); // Account for gap
+        setSlideHeight(300);
+        setIsMobile(true);
+      } else if (width < 1024) { // Tablet
+        setSlideWidth((width - 40 - 32) / 3); // Account for gaps
+        setSlideHeight(350);
+        setIsMobile(false);
+      } else { // Desktop
+        setSlideWidth((width - 40 - 48) / 4); // Account for gaps
+        setSlideHeight(384);
+        setIsMobile(false);
+      }
+      
+      // Update Embla plugin if available
+      if (emblaApi) {
+        emblaApi.reInit();
+      }
+    };
+    
+    updateResponsiveness();
+    window.addEventListener('resize', updateResponsiveness);
+    return () => window.removeEventListener('resize', updateResponsiveness);
+  }, [emblaApi, getScrollSpeed]);
 
   // Fetch similar products
   useEffect(() => {
@@ -78,144 +159,75 @@ const SimilarProducts: React.FC<SimilarProductsProps> = ({ singleProduct }) => {
     fetchSimilarProducts();
   }, [singleProduct]);
 
-  // Infinite loop scroll handling
-  useEffect(() => {
-    const total = similarProducts.length;
-
-    if (total === 0) return;
-
-    const transitionTime = 500;
-    let timeout: NodeJS.Timeout;
-
-    if (currentIndex === total + 1) {
-      // If we hit the fake first clone at the end
-      timeout = setTimeout(() => {
-        setTransitionEnabled(false);
-        setCurrentIndex(1); // jump to real first
-      }, transitionTime);
-    }
-
-    if (currentIndex === 0) {
-      // If we hit the fake last clone at the beginning
-      timeout = setTimeout(() => {
-        setTransitionEnabled(false);
-        setCurrentIndex(total); // jump to real last
-      }, transitionTime);
-    }
-
-    return () => clearTimeout(timeout);
-  }, [currentIndex, similarProducts.length]);
-
-  // Re-enable transition after jump
-  useEffect(() => {
-    if (!transitionEnabled) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTransitionEnabled(true);
-        });
-      });
-    }
-  }, [transitionEnabled]);
-
-  // Auto-scroll
-  const handleNext = useCallback(() => {
-    if (similarProducts.length === 0) return;
-    setCurrentIndex((prev) => prev + 1);
-  }, [similarProducts]);
-
-  const handlePrev = () => {
-    if (similarProducts.length === 0) return;
-    setCurrentIndex((prev) => prev - 1);
-  };
-
-  useEffect(() => {
-    if (similarProducts.length === 0) return;
-
-    autoScrollInterval.current = setInterval(() => {
-      if (!isHovered.current) {
-        handleNext();
-      }
-    }, 3000);
-
-    return () => {
-      if (autoScrollInterval.current) {
-        clearInterval(autoScrollInterval.current);
-        autoScrollInterval.current = null;
-      }
-    };
-  }, [handleNext, similarProducts]);
-
-  if (loading) return <div>Loading similar products...</div>;
-  if (similarProducts.length === 0) return <div>No similar products found.</div>;
-
-  // Clones for seamless scroll
-  const extendedSlides = [
-    similarProducts[similarProducts.length - 1], // clone last
-    ...similarProducts,
-    similarProducts[0], // clone first
-  ];
-
-  const containerStyle = {
-    transform: `translateX(-${currentIndex * (slideWidth + gap)}px)`,
-    transition: transitionEnabled ? "transform 0.5s ease" : "none",
-  };
+  if (loading) return <LoadingScreen />;
+  if (similarProducts.length === 0) return <div className="text-2xl font-bold w-full h-full flex justify-center items-center">No similar products found.</div>;
 
   return (
-    <div className="w-full h-full flex flex-col gap-6 justify-center items-center">
+    <div className="w-full h-full flex flex-col gap-6 justify-center items-center p-6">
       <h1 className="text-xl font-bold text-indigo-500">Similar Products</h1>
-      <div
-        className="relative overflow-hidden w-full"
-        onMouseEnter={() => (isHovered.current = true)}
-        onMouseLeave={() => (isHovered.current = false)}
-      >
-        <div className="flex" style={containerStyle}>
-          {extendedSlides.map((product, index) => {
-            const productImage = product.product_image.find((img) => img.url.includes("_first"));
-            return (
-              <div
-                key={`${product.product_id}-${index}`}
-                className="flex-shrink-0"
-                style={{ width: slideWidth, height: slideHeight, marginRight: gap }}
-              >
-                <div
-                  className="border p-4 h-full w-full flex flex-col justify-center items-center rounded-md cursor-pointer bg-indigo-300 dark:bg-gray-700"
-                  onClick={() => router.push(`/product/${product.product_id}`)}
-                >
-                  {product.product_image?.length > 0 && (
-                    <Image
-                      src={productImage?.url || product.product_image[0].url}
-                      alt={product.product_name}
-                      width={200}
-                      height={200}
-                      className="object-contain rounded-md w-60 h-60 hover:scale-125 duration-500"
-                    />
-                  )}
-                  <h2 className="mt-2 font-bold">{truncateText(product.product_name)}</h2>
-                  <div className="flex gap-5">
-                    <p className="font-extrabold text-xl">₹{product.product_SP}</p>
-                    <div className="flex gap-1">
-                      <p className="line-through text-[#b8b4b4] text-sm">₹{product.product_MRP}</p>
-                      <p className="font-bold text-sm text-emerald-300">
-                        ({product.product_discount.toFixed(2)}%)
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Arrows */}
+      
+      <div className="w-full relative">
+        {/* Previous button */}
         <button
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-slate-950 text-white p-2 rounded-full cursor-pointer"
-          onClick={handlePrev}
+          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-slate-950 text-white p-2 rounded-full cursor-pointer z-10 hover:bg-slate-800"
+          onClick={scrollPrev}
+          aria-label="Previous item"
         >
           <ArrowLeft />
         </button>
+        
+        {/* Embla carousel */}
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex">
+            {similarProducts.map((product, index) => {
+              const productImage = product.product_image.find((img) => img.url.includes("_first"));
+              return (
+                <div
+                  key={`${product.product_id}-${index}`}
+                  className="flex-shrink-0"
+                  style={{ 
+                    width: slideWidth, 
+                    paddingRight: 16, // Apply consistent padding to all slides for proper looping
+                  }}
+                >
+                  <div
+                    className="border p-4 h-full flex flex-col justify-center items-center rounded-md cursor-pointer bg-indigo-300 dark:bg-gray-700"
+                    onClick={() => router.push(`/product/${product.product_id}`)}
+                    style={{ height: slideHeight }}
+                  >
+                    {product.product_image?.length > 0 && (
+                      <Image
+                        src={productImage?.url || product.product_image[0].url}
+                        alt={product.product_name}
+                        width={isMobile ? 150 : 200}
+                        height={isMobile ? 150 : 200}
+                        className="object-contain rounded-md w-60 h-60 hover:scale-125 duration-500"
+                      />
+                    )}
+                    <h2 className="mt-2 font-bold text-center">
+                      {truncateText(product.product_name, isMobile ? 5 : 10)}
+                    </h2>
+                    <div className="flex gap-5 flex-wrap justify-center">
+                      <p className="font-extrabold text-xl">₹{product.product_SP}</p>
+                      <div className="flex gap-1">
+                        <p className="line-through text-[#b8b4b4] text-sm">₹{product.product_MRP}</p>
+                        <p className="font-bold text-sm text-emerald-300">
+                          ({product.product_discount.toFixed(2)}%)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Next button */}
         <button
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-slate-950 text-white p-2 rounded-full cursor-pointer"
-          onClick={handleNext}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-slate-950 text-white p-2 rounded-full cursor-pointer z-10 hover:bg-slate-800"
+          onClick={scrollNext}
+          aria-label="Next item"
         >
           <ArrowRight />
         </button>
