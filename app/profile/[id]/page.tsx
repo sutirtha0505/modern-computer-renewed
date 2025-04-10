@@ -3,7 +3,7 @@ import React from 'react'
 
 const profilePage = () => {
   return (
-    <div className=" absolute z-20 w-full py-12 h-screen flex justify-center items-center">
+    <div className=" absolute z-20 w-full py-12 bg-white dark:bg-black h-screen flex justify-center items-center">
     <UserProfile />
     </div>
   )
