@@ -11,26 +11,32 @@ const DraggableCircularNav: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
 
+  // Toggle mobile nav.
   const toggleNav = () => {
     setIsOpen(!isOpen);
   };
 
+  // Drag handler.
   const onDrag = (e: MouseEvent) => {
     const nav = navRef.current;
     if (nav) {
-      const navStyle = window.getComputedStyle(nav),
-        navTop = parseInt(navStyle.top, 10),
-        navHeight = parseInt(navStyle.height, 10),
-        windHeight = window.innerHeight;
+      const navStyle = window.getComputedStyle(nav);
+      const navTop = parseInt(navStyle.top, 10);
+      const navHeight = parseInt(navStyle.height, 10);
+      const windHeight = window.innerHeight;
 
-      // Move the nav vertically according to mouse movement
-      nav.style.top = navTop > 0 ? `${navTop + e.movementY}px` : "1px";
-      if (navTop > windHeight - navHeight) {
-        nav.style.top = `${windHeight - navHeight}px`;
+      // Adjust the top according to mouse movement.
+      let newTop = navTop + e.movementY;
+      newTop = newTop < 0 ? 1 : newTop; // don't let it go above the viewport.
+      // keep within the bottom bound.
+      if (newTop > windHeight - navHeight) {
+        newTop = windHeight - navHeight;
       }
+      nav.style.top = `${newTop}px`;
     }
   };
 
+  // Add drag listener (applied only on desktop).
   const addDragListeners = () => {
     const nav = navRef.current;
     if (window.innerWidth > 768 && nav) {
@@ -38,6 +44,7 @@ const DraggableCircularNav: React.FC = () => {
     }
   };
 
+  // Remove drag listener.
   const removeDragListeners = () => {
     const nav = navRef.current;
     if (nav) {
@@ -45,7 +52,7 @@ const DraggableCircularNav: React.FC = () => {
     }
   };
 
-  // Set initial nav position to vertical center.
+  // Set the initial nav position to vertical center regardless of device.
   useEffect(() => {
     const setInitialPosition = () => {
       if (navRef.current) {
@@ -54,7 +61,10 @@ const DraggableCircularNav: React.FC = () => {
         navRef.current.style.top = `${initialTop}px`;
       }
     };
+
+    // Set on mount.
     setInitialPosition();
+    // Recalculate on resize.
     window.addEventListener("resize", setInitialPosition);
     return () => window.removeEventListener("resize", setInitialPosition);
   }, []);
@@ -62,7 +72,7 @@ const DraggableCircularNav: React.FC = () => {
   return (
     <nav
       ref={navRef}
-      className={`nav ${isOpen ? "open" : ""} fixed right-2`}
+      className={`nav ${isOpen ? "open" : ""} fixed right-2 flex flex-col items-center justify-center`}
       onMouseDown={addDragListeners}
       onMouseUp={removeDragListeners}
       onMouseLeave={removeDragListeners}

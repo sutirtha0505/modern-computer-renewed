@@ -385,11 +385,8 @@ body {
 }
 /* Default styles for larger screens */
 nav {
-  position: fixed;
-  top: 20px;
   right: 0;
   width: 80px;
-  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -523,13 +520,8 @@ select {
 /* Styles for small screens */
 @media (max-width: 768px) {
   nav {
-    position: fixed;
-    bottom: 30px;
-    right: 10px;
-    cursor: default; /* Disable dragging */
+    cursor: grab; /* Disable dragging */
     z-index: 10;
-    width: auto;
-    height: auto;
   }
 }
 @media (min-width: 770px) and (max-width: 885px) {
