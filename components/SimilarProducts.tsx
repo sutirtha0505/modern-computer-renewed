@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { ArrowLeft, ArrowRight } from "lucide-react";
