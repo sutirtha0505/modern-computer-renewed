@@ -408,7 +408,7 @@ const NotificationBubbleOnDraggableCircularNav = () => {
     return (
       <div
         style={{ transition: `opacity ${fadeDuration}ms ease-in-out`, opacity: ordersVisible ? 1 : 0 }}
-        className="text-center relative w-96 h-36 flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-md p-2"
+        className="text-center relative w-64 md:w-96 h-48 flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-md p-2"
       >
         {currentOrder.products.length > 0
           ? currentOrder.products.map(product => {
@@ -418,10 +418,12 @@ const NotificationBubbleOnDraggableCircularNav = () => {
                 product.product_image?.[0];
               const imageUrl: string = imgItem ? getImgUrl(imgItem) : "";
               return (
-                <div key={product.product_id} className="flex items-center space-x-2 cursor-pointer"
-                onClick ={() => {
-                  router.push(`/product/${product.product_id}`);
-                }}
+                <div 
+                  key={product.product_id} 
+                  className="flex items-center space-x-2 cursor-pointer"
+                  onClick={() => {
+                    router.push(`/product/${product.product_id}`);
+                  }}
                 >
                   {imageUrl && (
                     <Image
@@ -467,9 +469,9 @@ const NotificationBubbleOnDraggableCircularNav = () => {
     return (
       <div
         style={{ transition: `opacity ${fadeDuration}ms ease-in-out`, opacity: preBuildVisible ? 1 : 0 }}
-        className="text-center relative w-96 h-36 flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-md p-2 cursor-pointer"
-        onClick ={() => {
-          router.push(`/pre-build-pc/${currentPreBuildOrder.ordered_products[0]?.product_id}`)
+        className="text-center relative w-64 md:w-96 h-48 flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-md p-2 cursor-pointer"
+        onClick={() => {
+          router.push(`/pre-build-pc/${currentPreBuildOrder.ordered_products[0]?.product_id}`);
         }}
       >
         {currentPreBuildOrder.ordered_products && currentPreBuildOrder.ordered_products.length > 0
@@ -496,7 +498,7 @@ const NotificationBubbleOnDraggableCircularNav = () => {
                     <p className="text-xs text-black">
                       ordered {prod.build_name || "Pre Build Product"}{" "}
                       {prod.build_type && `(${prod.build_type})`}{" "}
-                      {renderRelativeTime(currentPreBuildOrder.created_at)}
+                      {renderRelativeTime(currentPreBuildOrder.created_at)} Pre-Build PC
                     </p>
                   </div>
                 </div>
@@ -527,7 +529,7 @@ const NotificationBubbleOnDraggableCircularNav = () => {
     return (
       <div
         style={{ transition: `opacity ${fadeDuration}ms ease-in-out`, opacity: recentVisible ? 1 : 0 }}
-        className="flex flex-col justify-between items-center relative w-96 bg-white/50 backdrop-blur-sm rounded-md p-2"
+        className="flex flex-col justify-between items-center relative w-64 md:w-96 bg-white/50 backdrop-blur-sm rounded-md p-2"
       >
         <div
           className="flex flex-col items-center cursor-pointer"

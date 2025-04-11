@@ -72,13 +72,13 @@ const DraggableCircularNav: React.FC = () => {
   return (
     <nav
       ref={navRef}
-      className={`nav ${isOpen ? "open" : ""} fixed right-2 flex flex-col items-center justify-center`}
+      className={`nav ${isOpen ? "open" : ""} fixed flex flex-col items-center justify-center`}
       onMouseDown={addDragListeners}
       onMouseUp={removeDragListeners}
       onMouseLeave={removeDragListeners}
     >
       <div className="relative w-full h-full">
-        <div className="absolute -top-32 -left-96 z-40">
+        <div className="absolute -top-32 sm:-left-96 -left-[260px] z-40">
           <NotificationBubbleOnDraggableCircularNav />
         </div>
         <div className="nav-content relative">
