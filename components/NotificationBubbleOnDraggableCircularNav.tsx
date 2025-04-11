@@ -35,7 +35,7 @@ interface EnrichedPreBuildProduct {
   product_id: string;
   build_type: string;
   build_name: string;
-  image_urls: string[];
+  image_urls: { url: string }[];
 }
 
 interface EnrichedPreBuildOrderData {
@@ -97,7 +97,9 @@ const NotificationBubbleOnDraggableCircularNav = () => {
   const [ordersVisible, setOrdersVisible] = useState(true);
 
   // State for enriched pre-build orders from order_table_pre_build.
-  const [preBuildOrders, setPreBuildOrders] = useState<EnrichedPreBuildOrderData[]>([]);
+  const [preBuildOrders, setPreBuildOrders] = useState<
+    EnrichedPreBuildOrderData[]
+  >([]);
   const [currentPreBuildIndex, setCurrentPreBuildIndex] = useState(0);
   const [preBuildVisible, setPreBuildVisible] = useState(true);
 
@@ -109,7 +111,10 @@ const NotificationBubbleOnDraggableCircularNav = () => {
   // New state to control which section is displayed.
   type Section = "orders" | "preBuild" | "recent";
   // Memoize the sections array to avoid dependency issues in useEffect.
-  const sections = useMemo<Section[]>(() => ["orders", "preBuild", "recent"], []);
+  const sections = useMemo<Section[]>(
+    () => ["orders", "preBuild", "recent"],
+    []
+  );
   const [currentSection, setCurrentSection] = useState<Section>("orders");
   // For fade transitions for the overall section.
   const [sectionVisible, setSectionVisible] = useState(true);
@@ -141,18 +146,25 @@ const NotificationBubbleOnDraggableCircularNav = () => {
 
       // Format orders – extract product IDs.
       const formattedOrders: FormattedOrder[] = ordersData.map(
-        (order: { customer_id: string; ordered_products: { product_id: string }[]; created_at: string }) => ({
+        (order: {
+          customer_id: string;
+          ordered_products: { product_id: string }[];
+          created_at: string;
+        }) => ({
           customer_id: order.customer_id,
-          productIds: order.ordered_products?.map(
-            (prod: { product_id: string }) => prod.product_id
-          ) || [],
+          productIds:
+            order.ordered_products?.map(
+              (prod: { product_id: string }) => prod.product_id
+            ) || [],
           created_at: order.created_at,
         })
       );
 
       // Get customer details.
       const customerIds = Array.from(
-        new Set(formattedOrders.map((order) => order.customer_id).filter(Boolean))
+        new Set(
+          formattedOrders.map((order) => order.customer_id).filter(Boolean)
+        )
       );
       let customerMap: CustomerMapType = {};
       if (customerIds.length > 0) {
@@ -163,10 +175,13 @@ const NotificationBubbleOnDraggableCircularNav = () => {
         if (userError) {
           console.error("Error fetching user details:", userError);
         } else if (usersData) {
-          customerMap = usersData.reduce((acc: CustomerMapType, user: UserData) => {
-            acc[user.id] = user.customer_house_city;
-            return acc;
-          }, {});
+          customerMap = usersData.reduce(
+            (acc: CustomerMapType, user: UserData) => {
+              acc[user.id] = user.customer_house_city;
+              return acc;
+            },
+            {}
+          );
         }
       }
 
@@ -183,16 +198,21 @@ const NotificationBubbleOnDraggableCircularNav = () => {
         if (productError) {
           console.error("Error fetching product details:", productError);
         } else if (productsData) {
-          productMap = productsData.reduce((acc: ProductMapType, product: ProductData) => {
-            acc[product.product_id] = product;
-            return acc;
-          }, {});
+          productMap = productsData.reduce(
+            (acc: ProductMapType, product: ProductData) => {
+              acc[product.product_id] = product;
+              return acc;
+            },
+            {}
+          );
         }
       }
 
       const ordersWithProducts: OrderData[] = formattedOrders.map((order) => ({
         customer_id: order.customer_id,
-        customer_house_city: order.customer_id ? customerMap[order.customer_id] : undefined,
+        customer_house_city: order.customer_id
+          ? customerMap[order.customer_id]
+          : undefined,
         created_at: order.created_at,
         products: order.productIds
           .map((pid: string) => productMap[pid])
@@ -222,13 +242,19 @@ const NotificationBubbleOnDraggableCircularNav = () => {
       const ordersWithUser: PreBuildOrderData[] = preBuildData.map(
         (order: PreBuildOrderData) => ({
           ...order,
-          customer_house_city: order.customer_id ? order.customer_house_city : "Unknown",
+          customer_house_city: order.customer_id
+            ? order.customer_house_city
+            : "Unknown",
         })
       );
 
       // Get unique customer IDs and fetch user details.
       const uniqueCustomerIds = Array.from(
-        new Set(ordersWithUser.map((order) => order.customer_id).filter((id): id is string => Boolean(id)))
+        new Set(
+          ordersWithUser
+            .map((order) => order.customer_id)
+            .filter((id): id is string => Boolean(id))
+        )
       );
       let customerMap: CustomerMapType = {};
       if (uniqueCustomerIds.length > 0) {
@@ -239,18 +265,25 @@ const NotificationBubbleOnDraggableCircularNav = () => {
         if (userError) {
           console.error("Error fetching user details:", userError);
         } else if (userData) {
-          customerMap = userData.reduce((acc: CustomerMapType, user: UserData) => {
-            acc[user.id] = user.customer_house_city;
-            return acc;
-          }, {});
+          customerMap = userData.reduce(
+            (acc: CustomerMapType, user: UserData) => {
+              acc[user.id] = user.customer_house_city;
+              return acc;
+            },
+            {}
+          );
         }
       }
 
       // Re-map orders to include customer_house_city.
-      const ordersWithCustomer: PreBuildOrderData[] = ordersWithUser.map((order) => ({
-        ...order,
-        customer_house_city: order.customer_id ? customerMap[order.customer_id] : "Unknown",
-      }));
+      const ordersWithCustomer: PreBuildOrderData[] = ordersWithUser.map(
+        (order) => ({
+          ...order,
+          customer_house_city: order.customer_id
+            ? customerMap[order.customer_id]
+            : "Unknown",
+        })
+      );
 
       // Collect all product IDs.
       const allProductIds: string[] = [];
@@ -269,7 +302,10 @@ const NotificationBubbleOnDraggableCircularNav = () => {
             .select("id, build_type, build_name, image_urls")
             .in("id", uniqueProductIds);
         if (preBuildProductsError) {
-          console.error("Error fetching pre-build product details:", preBuildProductsError);
+          console.error(
+            "Error fetching pre-build product details:",
+            preBuildProductsError
+          );
         } else if (preBuildProductsData) {
           preBuildProductMap = preBuildProductsData.reduce(
             (acc: PreBuildProductMap, product: PreBuildProduct) => {
@@ -285,24 +321,25 @@ const NotificationBubbleOnDraggableCircularNav = () => {
         }
       }
 
-      const enrichedOrders: EnrichedPreBuildOrderData[] = ordersWithCustomer.map(
-        (order) => ({
+      // When building enriched orders, update the mapping:
+      const enrichedOrders: EnrichedPreBuildOrderData[] =
+        ordersWithCustomer.map((order) => ({
           ...order,
           ordered_products: order.ordered_products.map((prodId: string) => {
             const details = preBuildProductMap[prodId] || {
               build_type: "",
               build_name: "",
-              image_urls: [],
+              image_urls: [] as string[],
             };
             return {
               product_id: prodId,
               build_type: details.build_type,
               build_name: details.build_name,
-              image_urls: details.image_urls,
+              // Convert image_urls from string[] to {url: string}[] if necessary.
+              image_urls: details.image_urls.map((url) => ({ url })),
             };
           }),
-        })
-      );
+        }));
 
       setPreBuildOrders(enrichedOrders);
     };
@@ -415,6 +452,7 @@ const NotificationBubbleOnDraggableCircularNav = () => {
               product.product_image?.find((img: { url: string }) =>
                 img.url.includes("_first")
               ) || product.product_image?.[0];
+
             return (
               <div
                 key={product.product_id}
@@ -470,33 +508,39 @@ const NotificationBubbleOnDraggableCircularNav = () => {
         }}
         className="text-center relative w-96 h-36 flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-md p-2"
       >
-        {currentPreBuildOrder.ordered_products && currentPreBuildOrder.ordered_products.length > 0 ? (
-          currentPreBuildOrder.ordered_products.map((prod, idx: number) => (
-            <div key={idx} className="mt-1 flex items-center space-x-2">
-              {prod.image_urls &&
-               prod.image_urls.length > 0 &&
-               prod.image_urls[0] && ( // Check that image_urls[0] is truthy
-                <Image
-                  src={prod.image_urls[0]}
-                  alt={prod.build_name || "Pre Build Product"}
-                  className="w-16 h-16 object-cover"
-                  width={64}
-                  height={64}
-                />
-              )}
-              <div className="flex flex-col">
-                <p className="text-sm text-black font-bold">
-                  Someone from{" "}
-                  {currentPreBuildOrder.customer_house_city || "Unknown"}
-                </p>
-                <p className="text-xs text-black">
-                  ordered {prod.build_name || "Pre Build Product"}{" "}
-                  {prod.build_type && `(${prod.build_type})`}{" "}
-                  {renderRelativeTime(currentPreBuildOrder.created_at)}
-                </p>
+        {currentPreBuildOrder.ordered_products &&
+        currentPreBuildOrder.ordered_products.length > 0 ? (
+          currentPreBuildOrder.ordered_products.map((prod, idx: number) => {
+            // Choose the image with "_first" indicator or default to the first:
+            const productImage =
+              prod.image_urls?.find((img: { url: string }) =>
+                img.url.includes("_first")
+              ) || prod.image_urls?.[0];
+            return (
+              <div key={idx} className="mt-1 flex items-center space-x-2">
+                {productImage && productImage.url && (
+                  <Image
+                    src={productImage.url}
+                    alt={prod.build_name || "Pre Build Product"}
+                    className="w-16 h-16 object-cover"
+                    width={64}
+                    height={64}
+                  />
+                )}
+                <div className="flex flex-col">
+                  <p className="text-sm text-black font-bold">
+                    Someone from{" "}
+                    {currentPreBuildOrder.customer_house_city || "Unknown"}
+                  </p>
+                  <p className="text-xs text-black">
+                    ordered {prod.build_name || "Pre Build Product"}{" "}
+                    {prod.build_type && `(${prod.build_type})`}{" "}
+                    {renderRelativeTime(currentPreBuildOrder.created_at)}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <span>No ordered products</span>
         )}
@@ -517,8 +561,9 @@ const NotificationBubbleOnDraggableCircularNav = () => {
     }
     const product = recentProducts[currentRecentIndex];
     const productImage =
-      product.product_image?.find((img: { url: string }) => img.url.includes("_first")) ||
-      product.product_image?.[0];
+      product.product_image?.find((img: { url: string }) =>
+        img.url.includes("_first")
+      ) || product.product_image?.[0];
     return (
       <div
         style={{
@@ -530,7 +575,7 @@ const NotificationBubbleOnDraggableCircularNav = () => {
         <div
           className="flex flex-col items-center"
           onClick={() => {
-            router.push(`/products/${product.product_id}`);
+            router.push(`/product/${product.product_id}`);
           }}
         >
           <h1 className="text-black font-bold mb-2">Newly Arrived</h1>

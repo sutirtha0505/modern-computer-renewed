@@ -22,7 +22,8 @@ const DraggableCircularNav: React.FC = () => {
         navTop = parseInt(navStyle.top, 10),
         navHeight = parseInt(navStyle.height, 10),
         windHeight = window.innerHeight;
-  
+
+      // Move the nav vertically according to mouse movement
       nav.style.top = navTop > 0 ? `${navTop + e.movementY}px` : "1px";
       if (navTop > windHeight - navHeight) {
         nav.style.top = `${windHeight - navHeight}px`;
@@ -101,7 +102,7 @@ const DraggableCircularNav: React.FC = () => {
             >
               <Image
                 src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/Instagram-Logo.png"
-                alt=""
+                alt="instagram"
                 width={50}
                 height={50}
                 className="insta"
@@ -150,7 +151,7 @@ const DraggableCircularNav: React.FC = () => {
               <Image
                 src="https://supabase.moderncomputer.in/storage/v1/object/public/product-image/Logo_Social/gmail.png"
                 className="gmail"
-                alt=""
+                alt="gmail"
                 width={30}
                 height={30}
               />
