@@ -180,46 +180,46 @@ const SimilarProducts: React.FC<SimilarProductsProps> = ({ singleProduct }) => {
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
             {similarProducts.map((product, index) => {
-              const productImage = product.product_image.find((img) => img.url.includes("_first"));
-              return (
-                <div
-                  key={`${product.product_id}-${index}`}
-                  className="flex-shrink-0"
+            const productImage = product.product_image.find((img) => img.url.includes("_first"));
+            return (
+              <div
+                key={`${product.product_id}-${index}`}
+                className="flex-shrink-0"
                   style={{ 
                     width: slideWidth, 
                     paddingRight: 16, // Apply consistent padding to all slides for proper looping
                   }}
-                >
-                  <div
+              >
+                <div
                     className="border p-4 h-full flex flex-col justify-center items-center rounded-md cursor-pointer bg-indigo-300 dark:bg-gray-700"
-                    onClick={() => router.push(`/product/${product.product_id}`)}
+                  onClick={() => router.push(`/product/${product.product_id}`)}
                     style={{ height: slideHeight }}
-                  >
-                    {product.product_image?.length > 0 && (
-                      <Image
-                        src={productImage?.url || product.product_image[0].url}
-                        alt={product.product_name}
+                >
+                  {product.product_image?.length > 0 && (
+                    <Image
+                      src={productImage?.url || product.product_image[0].url}
+                      alt={product.product_name}
                         width={isMobile ? 150 : 200}
                         height={isMobile ? 150 : 200}
-                        className="object-contain rounded-md w-60 h-60 hover:scale-125 duration-500"
-                      />
-                    )}
+                      className="object-contain rounded-md w-60 h-60 hover:scale-125 duration-500"
+                    />
+                  )}
                     <h2 className="mt-2 font-bold text-center">
                       {truncateText(product.product_name, isMobile ? 5 : 10)}
                     </h2>
                     <div className="flex gap-5 flex-wrap justify-center">
-                      <p className="font-extrabold text-xl">₹{product.product_SP}</p>
-                      <div className="flex gap-1">
-                        <p className="line-through text-[#b8b4b4] text-sm">₹{product.product_MRP}</p>
-                        <p className="font-bold text-sm text-emerald-300">
-                          ({product.product_discount.toFixed(2)}%)
-                        </p>
-                      </div>
+                    <p className="font-extrabold text-xl">₹{product.product_SP}</p>
+                    <div className="flex gap-1">
+                      <p className="line-through text-[#b8b4b4] text-sm">₹{product.product_MRP}</p>
+                      <p className="font-bold text-sm text-emerald-300">
+                        ({product.product_discount.toFixed(2)}%)
+                      </p>
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            );
+          })}
           </div>
         </div>
 

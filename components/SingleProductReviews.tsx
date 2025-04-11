@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
+import LoadingScreen from "./LoadingScreen";
 
 interface Review {
   time: string;
@@ -147,7 +148,7 @@ const SingleProductReviews: React.FC<SingleProductReviewsProps> = ({
     }
   };
 
-  if (loading) return <p>Loading reviews...</p>;
+  if (loading) return <LoadingScreen />;
   if (error) return <p>{error}</p>;
 
   return (
