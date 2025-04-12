@@ -38,7 +38,7 @@ const PrivacyPoliciespage = () => {
   };
 
   return (
-    <div className='w-full h-full min-h-screen flex flex-col justify-center items-center gap-8 p-8'>
+    <div className='w-full h-full min-h-screen flex flex-col justify-center items-center gap-8 p-8 pt-28'>
       <div className='w-[80%] rounded-lg shadow-lg p-8 bg-slate-600 dark:bg-slate-800 flex flex-col'>
         <h2 className='text-2xl font-bold mb-6 text-indigo-600 text-center'>Privacy Policy</h2>
         <div 
