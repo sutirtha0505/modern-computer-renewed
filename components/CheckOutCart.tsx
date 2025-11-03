@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import CartFinalCheckOut from './CartFinalCheckOut'
 import { User } from '@supabase/supabase-js'
+import WhyUs from './WhyUs'
 
 const CheckOutCart = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -20,7 +21,7 @@ const CheckOutCart = () => {
         } = await supabase.auth.getUser();
 
         if (!user) {
-          router.push('/SignIn');
+          router.push('/login');
         } else {
           setUser(user);
           console.log('User ID:', user.id);  // Print user ID
@@ -47,7 +48,8 @@ const CheckOutCart = () => {
           Checkout for <span className='text-indigo-500'>Cart Items</span>
         </h1>
         {user && <CustomerDetails userId={user.id} />} {/* Pass user.id to CustomerDetails */}
-        {user && <CartFinalCheckOut userId = {user.id} />}
+        <WhyUs />
+        {user && <CartFinalCheckOut userId={user.id} />}
       </div>
     </div>
   )

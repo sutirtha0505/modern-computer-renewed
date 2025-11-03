@@ -2,6 +2,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Metadata } from "next";
 import { Suspense } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import NotificationBubbleOnDraggableCircularNav from "@/components/NotificationBubbleOnDraggableCircularNav";
 import LoadingScreen from "@/components/LoadingScreen";
 import { SessionProviderWrapper } from "@/components/SessionProvderWrapper";
 import dynamic from "next/dynamic";
@@ -131,6 +134,9 @@ export default function RootLayout({
         >
           {/* Using alert to prompt for fullscreen mode */}
             <AutoFullscreen />
+            {/* Toast container and notification manager (bottom-left) */}
+            <ToastContainer position="bottom-left" newestOnTop={false} />
+            <NotificationBubbleOnDraggableCircularNav />
           <div className="min-h-screen">
             {/* Wrap the client-side rendered content with HydrationContainer */}
             <HydrationContainer>

@@ -1,11 +1,11 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 // Define a type for our image URL item.
 export type ImageUrl = string | { url: string };
@@ -99,33 +99,31 @@ const truncateText = (text: string, wordLimit: number): string => {
 };
 
 const NotificationBubbleOnDraggableCircularNav = () => {
+  // Router for navigation when clicking toast content.
   const router = useRouter();
 
   // State for orders from order_table (with user and product details)
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [currentOrdersIndex, setCurrentOrdersIndex] = useState(0);
-  const [ordersVisible, setOrdersVisible] = useState(true);
 
   // State for enriched pre-build orders from order_table_pre_build.
   const [preBuildOrders, setPreBuildOrders] = useState<EnrichedPreBuildOrderData[]>([]);
   const [currentPreBuildIndex, setCurrentPreBuildIndex] = useState(0);
-  const [preBuildVisible, setPreBuildVisible] = useState(true);
 
   // State for recent products.
   const [recentProducts, setRecentProducts] = useState<ProductData[]>([]);
   const [currentRecentIndex, setCurrentRecentIndex] = useState(0);
-  const [recentVisible, setRecentVisible] = useState(true);
 
   // Section control.
   type Section = "orders" | "preBuild" | "recent";
   const sections = useMemo<Section[]>(() => ["orders", "preBuild", "recent"], []);
   const [currentSection, setCurrentSection] = useState<Section>("orders");
-  const [sectionVisible, setSectionVisible] = useState(true);
 
-  const [showContainer, setShowContainer] = useState(true);
+  // We'll show a toast and update it periodically. Make this less frequent.
+  const fadeDuration = 500; // kept for potential future use
+  const displayInterval = 30000; // 30s per item (was 5000)
 
-  const fadeDuration = 500; // duration in ms for fade transition
-  const displayInterval = 5000; // total time each item is displayed
+  // (no persistent toast id required for transient toasts)
 
   const renderRelativeTime = (created_at: string) => {
     const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -333,252 +331,171 @@ const NotificationBubbleOnDraggableCircularNav = () => {
     fetchRecentProducts();
   }, []);
 
-  // Cycle through items within each section.
-  useEffect(() => {
-    if (orders.length > 0) {
-      const interval = setInterval(() => {
-        setOrdersVisible(false);
-        setTimeout(() => {
-          setCurrentOrdersIndex(prev => (prev + 1) % orders.length);
-          setOrdersVisible(true);
-        }, fadeDuration);
-      }, displayInterval);
-      return () => clearInterval(interval);
-    }
-  }, [orders]);
-
-  useEffect(() => {
-    if (preBuildOrders.length > 0) {
-      const interval = setInterval(() => {
-        setPreBuildVisible(false);
-        setTimeout(() => {
-          setCurrentPreBuildIndex(prev => (prev + 1) % preBuildOrders.length);
-          setPreBuildVisible(true);
-        }, fadeDuration);
-      }, displayInterval);
-      return () => clearInterval(interval);
-    }
-  }, [preBuildOrders]);
-
-  useEffect(() => {
-    if (recentProducts.length > 0) {
-      const interval = setInterval(() => {
-        setRecentVisible(false);
-        setTimeout(() => {
-          setCurrentRecentIndex(prev => (prev + 1) % recentProducts.length);
-          setRecentVisible(true);
-        }, fadeDuration);
-      }, displayInterval);
-      return () => clearInterval(interval);
-    }
-  }, [recentProducts]);
-
-  // Cycle through the three sections randomly.
-  useEffect(() => {
-    const sectionInterval = setInterval(() => {
-      setSectionVisible(false);
-      setTimeout(() => {
-        const available = sections.filter(sec => sec !== currentSection);
-        const newSection = available[Math.floor(Math.random() * available.length)];
-        setCurrentSection(newSection);
-        setSectionVisible(true);
-      }, fadeDuration);
-    }, displayInterval);
-    return () => clearInterval(sectionInterval);
-  }, [currentSection, sections]);
-
-  // Handle container visibility.
-  const handleClose = () => {
-    setShowContainer(false);
-    setTimeout(() => {
-      setShowContainer(true);
-    }, 90000);
-  };
-
-  if (!showContainer) {
-    return null;
-  }
-
-  // Render the orders section.
-  const renderOrdersSection = () => {
-    const currentOrder = orders[currentOrdersIndex];
-    if (!currentOrder) {
-      return <p className="text-black text-xs">Loading recent orders...</p>;
-    }
-    return (
-      <div
-        style={{ transition: `opacity ${fadeDuration}ms ease-in-out`, opacity: ordersVisible ? 1 : 0 }}
-        className="text-center relative w-64 md:w-96 h-48 flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-md p-2"
-      >
-        {currentOrder.products.length > 0
-          ? currentOrder.products.map(product => {
-              // Safely find an image that includes "_first".
-              const imgItem: ImageUrl | undefined =
-                product.product_image?.find(img => getImgUrl(img).includes("_first")) ||
-                product.product_image?.[0];
-              const imageUrl: string = imgItem ? getImgUrl(imgItem) : "";
-              return (
-                <div 
-                  key={product.product_id} 
-                  className="flex items-center space-x-2 cursor-pointer"
-                  onClick={() => {
-                    router.push(`/product/${product.product_id}`);
-                  }}
-                >
-                  {imageUrl && (
-                    <Image
-                      src={imageUrl}
-                      alt={product.product_name}
-                      className="w-20 h-20 object-cover"
-                      width={128}
-                      height={128}
-                    />
-                  )}
-                  <div className="text-left">
-                    {currentOrder.customer_house_city && (
-                      <p className="text-black text-sm font-bold">
-                        Someone from {currentOrder.customer_house_city}
-                      </p>
-                    )}
-                    <p className="text-black text-xs">
-                      ordered {truncateText(product.product_name, 4)}{" "}
-                      {renderRelativeTime(currentOrder.created_at)}
-                    </p>
-                  </div>
-                </div>
-              );
-            })
-          : <p className="text-black text-xs">No products found</p>}
-        <button
-          onClick={handleClose}
-          className="text-3xl absolute -top-5 -right-4 font-bold p-2 text-red-500 cursor-pointer bg-gray-400 rounded-full h-8 w-8 flex justify-center items-center hover:bg-gray-700"
-          aria-label="Close"
+  // Build the toast content component for different sections
+  const ToastContent: React.FC<{ section: Section; index: number; onInnerClick?: (navigateTo?: string) => void }> = ({ section, index, onInnerClick }) => {
+    if (section === "orders") {
+      const currentOrder = orders[index];
+      if (!currentOrder) return <div>Loading recent orders...</div>;
+      const product = currentOrder.products[0];
+      const imgItem: ImageUrl | undefined =
+        product?.product_image?.find(img => getImgUrl(img).includes("_first")) || product?.product_image?.[0];
+      const imageUrl: string = imgItem ? getImgUrl(imgItem) : "";
+      return (
+        <div
+          className="flex items-center space-x-3 cursor-pointer"
+          onClick={() => {
+            if (product && onInnerClick) {
+              onInnerClick(`/product/${product.product_id}`);
+            }
+          }}
         >
-          <Trash2 className="text-red-500" />
-        </button>
-      </div>
-    );
-  };
-
-  // Render the pre-build orders section.
-  const renderPreBuildSection = () => {
-    const currentPreBuildOrder = preBuildOrders[currentPreBuildIndex];
-    if (!currentPreBuildOrder) {
-      return <p className="text-black text-xs">Loading pre build orders...</p>;
+          {imageUrl && (
+            <Image src={imageUrl} alt={product.product_name} width={64} height={64} className="object-cover" />
+          )}
+          <div>
+            <div className="font-bold text-sm">Someone from {currentOrder.customer_house_city}</div>
+            <div className="text-xs">ordered {truncateText(product.product_name, 4)} • {renderRelativeTime(currentOrder.created_at)}</div>
+          </div>
+        </div>
+      );
     }
-    return (
-      <div
-        style={{ transition: `opacity ${fadeDuration}ms ease-in-out`, opacity: preBuildVisible ? 1 : 0 }}
-        className="text-center relative w-64 md:w-96 h-48 flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-md p-2 cursor-pointer"
-        onClick={() => {
-          router.push(`/pre-build-pc/${currentPreBuildOrder.ordered_products[0]?.product_id}`);
-        }}
-      >
-        {currentPreBuildOrder.ordered_products && currentPreBuildOrder.ordered_products.length > 0
-          ? currentPreBuildOrder.ordered_products.map((prod, idx) => {
-              const imgItem: ImageUrl | undefined =
-                prod.image_urls?.find(img => getImgUrl(img).includes("_first")) ||
-                prod.image_urls?.[0];
-              const imageUrl: string = imgItem ? getImgUrl(imgItem) : "";
-              return (
-                <div key={idx} className="mt-1 flex items-center space-x-2">
-                  {imageUrl && (
-                    <Image
-                      src={imageUrl}
-                      alt={prod.build_name || "Pre Build Product"}
-                      className="w-16 h-16 object-cover"
-                      width={128}
-                      height={128}
-                    />
-                  )}
-                  <div className="flex flex-col">
-                    <p className="text-sm text-black font-bold">
-                      Someone from {currentPreBuildOrder.customer_house_city || "Unknown"}
-                    </p>
-                    <p className="text-xs text-black">
-                      ordered {prod.build_name || "Pre Build Product"}{" "}
-                      {prod.build_type && `(${prod.build_type})`}{" "}
-                      {renderRelativeTime(currentPreBuildOrder.created_at)} Pre-Build PC
-                    </p>
-                  </div>
-                </div>
-              );
-            })
-          : <span>No ordered products</span>}
-        <button
-          onClick={handleClose}
-          className="text-3xl absolute -top-5 -right-4 font-bold p-2 text-red-500 cursor-pointer bg-gray-400 rounded-full h-8 w-8 flex justify-center items-center hover:bg-gray-700"
-          aria-label="Close"
+
+    if (section === "preBuild") {
+      const order = preBuildOrders[index];
+      if (!order) return <div>Loading pre-build orders...</div>;
+      const prod = order.ordered_products[0];
+      const imgItem: ImageUrl | undefined = prod?.image_urls?.find(img => getImgUrl(img).includes("_first")) || prod?.image_urls?.[0];
+      const imageUrl: string = imgItem ? getImgUrl(imgItem) : "";
+      return (
+        <div
+          className="flex items-center space-x-3 cursor-pointer"
+          onClick={() => {
+            if (prod && onInnerClick) {
+              onInnerClick(`/pre-build-pc/${prod.product_id}`);
+            }
+          }}
         >
-          <Trash2 className="text-red-500" />
-        </button>
-      </div>
-    );
-  };
-
-  // Render recent products section.
-  const renderRecentSection = () => {
-    const product = recentProducts[currentRecentIndex];
-    if (!product) {
-      return <p className="text-black text-xs">Fetching recent products...</p>;
+          {imageUrl && (
+            <Image src={imageUrl} alt={prod.build_name || "Pre Build"} width={64} height={64} className="object-cover" />
+          )}
+          <div>
+            <div className="font-bold text-sm">Someone from {order.customer_house_city || "Unknown"}</div>
+            <div className="text-xs">ordered {prod.build_name || "Pre Build"} {prod.build_type && `(${prod.build_type})`} • {renderRelativeTime(order.created_at)}</div>
+          </div>
+        </div>
+      );
     }
-    const imgItem: ImageUrl | undefined =
-      product.product_image?.find(img => getImgUrl(img).includes("_first")) ||
-      product.product_image?.[0];
+
+    // recent
+    const product = recentProducts[index];
+    if (!product) return <div>Fetching recent products...</div>;
+    const imgItem: ImageUrl | undefined = product.product_image?.find(img => getImgUrl(img).includes("_first")) || product.product_image?.[0];
     const imageUrl: string = imgItem ? getImgUrl(imgItem) : "";
     return (
       <div
-        style={{ transition: `opacity ${fadeDuration}ms ease-in-out`, opacity: recentVisible ? 1 : 0 }}
-        className="flex flex-col justify-between items-center relative w-64 md:w-96 bg-white/50 backdrop-blur-sm rounded-md p-2"
+        className="flex items-center space-x-3 cursor-pointer"
+        onClick={() => {
+          if (onInnerClick) onInnerClick(`/product/${product.product_id}`);
+        }}
       >
-        <div
-          className="flex flex-col items-center cursor-pointer"
-          onClick={() => router.push(`/product/${product.product_id}`)}
-        >
-          <h1 className="text-black font-bold mb-2">Newly Arrived</h1>
-          {imageUrl && (
-            <Image
-              src={imageUrl}
-              alt={product.product_name}
-              className="w-32 h-32 object-cover"
-              width={128}
-              height={128}
-            />
-          )}
-          <p className="text-black text-sm font-bold">{truncateText(product.product_name, 6)}</p>
+        {imageUrl && (
+          <Image src={imageUrl} alt={product.product_name} width={64} height={64} className="object-cover" />
+        )}
+        <div>
+          <div className="font-bold text-sm">Newly Arrived</div>
+          <div className="text-xs">{truncateText(product.product_name, 6)}</div>
         </div>
-        <button
-          onClick={handleClose}
-          className="text-3xl absolute -top-5 -right-4 font-bold p-2 text-red-500 cursor-pointer bg-gray-400 rounded-full h-8 w-8 flex justify-center items-center hover:bg-gray-700"
-          aria-label="Close"
-        >
-          <Trash2 className="text-red-500" />
-        </button>
       </div>
     );
   };
 
-  const renderCurrentSection = () => {
-    switch (currentSection) {
-      case "preBuild":
-        return renderPreBuildSection();
-      case "orders":
-        return renderOrdersSection();
-      case "recent":
-        return renderRecentSection();
-      default:
-        return null;
-    }
+  // Show a transient toast for the provided section/index. Toast will auto-close.
+  const showTransientToast = (section: Section, idx: number) => {
+    // Create a toast id that will be available to the click handler via closure.
+    let transientId: string | number | null = null;
+
+    // Handler passed into the content to allow navigation and dismissal.
+    const onInnerClick = (navigateTo?: string) => {
+      if (transientId !== null) toast.dismiss(transientId);
+      if (navigateTo) router.push(navigateTo);
+    };
+
+    const content = <ToastContent section={section} index={idx} onInnerClick={onInnerClick} />;
+
+    transientId = toast(content, {
+      position: "bottom-left",
+      autoClose: 8000, // 8s visible
+      closeOnClick: true,
+      closeButton: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
   };
 
-  return (
-    <div
-      style={{ transition: `opacity ${fadeDuration}ms ease-in-out`, opacity: sectionVisible ? 1 : 0 }}
-      className="flex justify-center items-center"
-    >
-      {renderCurrentSection()}
-    </div>
-  );
+  // Cycle indices and sections periodically, updating the toast instead of rendering in place
+  useEffect(() => {
+    // Only show toasts when there is data available for the active section.
+    const maybeShow = () => {
+      if (currentSection === "orders" && orders.length > 0) {
+        showTransientToast("orders", currentOrdersIndex);
+      } else if (currentSection === "preBuild" && preBuildOrders.length > 0) {
+        showTransientToast("preBuild", currentPreBuildIndex);
+      } else if (currentSection === "recent" && recentProducts.length > 0) {
+        showTransientToast("recent", currentRecentIndex);
+      }
+    };
+
+    // initial show after a short delay to allow fetches to populate
+    const initialTimeout = setTimeout(maybeShow, 2000);
+
+    const sectionInterval = setInterval(() => {
+      // move to next section
+      const available = sections.filter(sec => sec !== currentSection);
+      const newSection = available[Math.floor(Math.random() * available.length)];
+      setCurrentSection(newSection);
+      // show toast for the new section once switched
+      // small delay to let index changes settle
+      setTimeout(maybeShow, 500);
+    }, displayInterval);
+
+    return () => {
+      clearInterval(sectionInterval);
+      clearTimeout(initialTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSection, orders.length, preBuildOrders.length, recentProducts.length, currentOrdersIndex, currentPreBuildIndex, currentRecentIndex]);
+
+  // No persistent toast to sync; toasts are transient and created by the main interval/effects.
+
+  // Individual cycling for orders / prebuild / recent (slower rate)
+  useEffect(() => {
+    if (orders.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentOrdersIndex(prev => (prev + 1) % orders.length);
+    }, displayInterval * 2); // show each order for 60s
+    return () => clearInterval(interval);
+  }, [orders]);
+
+  useEffect(() => {
+    if (preBuildOrders.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentPreBuildIndex(prev => (prev + 1) % preBuildOrders.length);
+    }, displayInterval * 2);
+    return () => clearInterval(interval);
+  }, [preBuildOrders]);
+
+  useEffect(() => {
+    if (recentProducts.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentRecentIndex(prev => (prev + 1) % recentProducts.length);
+    }, displayInterval * 2);
+    return () => clearInterval(interval);
+  }, [recentProducts]);
+
+  // clicking toast should navigate if user clicks the content area
+  // react-toastify doesn't provide direct onClick for custom render, but closeButton is present.
+
+  return null; // this component only manages toasts
 };
 
 export default NotificationBubbleOnDraggableCircularNav;

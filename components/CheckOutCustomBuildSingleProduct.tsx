@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import CustomBuildSingleProductFinalCheckOut from './CustomBuildSingleProductFinalCheckOut'
 import { User } from '@supabase/supabase-js'
 import { useSession } from 'next-auth/react'
+import WhyUs from './WhyUs'
 
 const CheckOutCustomBuildSingleProduct = () => {
   const { data: session } = useSession();
@@ -43,7 +44,8 @@ const CheckOutCustomBuildSingleProduct = () => {
           Checkout for <span className='text-indigo-500'>Your Selected Custom-Build PC</span>
         </h1>
         {user && <CustomerDetails userId={user.id} />} {/* Pass user.id to CustomerDetails */}
-        {user &&<CustomBuildSingleProductFinalCheckOut userId={user.id} />}
+        <WhyUs />
+        {user && <CustomBuildSingleProductFinalCheckOut userId={user.id} />}
       </div>
     </div>
   )

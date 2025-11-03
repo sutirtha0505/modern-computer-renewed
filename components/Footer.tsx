@@ -118,7 +118,7 @@ const Footer = () => {
           <div className="flex gap-2 justify-center items-center cursor-pointer"
            onClick={() => {
              if (!user) {
-               router.push("/SignIn");
+               router.push("/login");
              } else {
                router.push(`/profile/${user.id}`);
              }

@@ -71,7 +71,7 @@ const CharacterCounterInputForproduct: React.FC<
       await new Promise((resolve) => setTimeout(resolve, 4000));
 
       // Redirect to SignIn page if user is not logged in
-      router.push("/SignIn");
+      router.push("/login");
       return;
     }
 

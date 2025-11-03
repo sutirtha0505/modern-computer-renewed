@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { Metadata } from "next";
 import LoadingScreen from "@/components/LoadingScreen";
 import WhyUs from "@/components/WhyUs";
+import ProductCategoriesInHomePage from "@/components/ProductCategoriesInHomePage";
 
 // Dynamically import components with loading fallbacks
 
@@ -89,6 +90,7 @@ export default function Home() {
         <Hero />
         <ProductByCategoriesSlider />
         <WhyUs />
+        <ProductCategoriesInHomePage />
         <BestSellerSlider />
         <PreBuildPCINHomePage />
         <CustomBuildPCINHomePage />

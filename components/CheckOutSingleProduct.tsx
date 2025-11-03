@@ -8,6 +8,7 @@ import { User } from "@supabase/supabase-js";
 import { useSession } from "next-auth/react";
 
 import LoadingScreen from "./LoadingScreen";
+import WhyUs from "./WhyUs";
 
 const CheckOutSingleProduct = () => {
   const { data: session } = useSession();
@@ -48,6 +49,7 @@ const CheckOutSingleProduct = () => {
         </h1>
         {/* Pass user.id to CustomerDetails and CartSingleProductFinalCheckOut */}
         {user && <CustomerDetails userId={user.id} />}
+        <WhyUs />
         {user && <CartSingleProductFinalCheckOut userId={user.id} />} {/* Pass user.id */}
       </div>
     </div>

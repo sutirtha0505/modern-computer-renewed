@@ -4,7 +4,7 @@ import { FaFacebook, FaWhatsapp, FaYoutube } from "react-icons/fa";
 import { IoCall } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import NotificationBubbleOnDraggableCircularNav from "./NotificationBubbleOnDraggableCircularNav";
+// Notification manager moved to site-level toast (react-toastify). Removed in-place bubble.
 
 const DraggableCircularNav: React.FC = () => {
   const router = useRouter();
@@ -78,9 +78,7 @@ const DraggableCircularNav: React.FC = () => {
       onMouseLeave={removeDragListeners}
     >
       <div className="relative w-full h-full">
-        <div className="absolute -top-32 sm:-left-96 -left-[260px] z-40">
-          <NotificationBubbleOnDraggableCircularNav />
-        </div>
+        {/* Notification bubble removed from nav; notifications are now shown as toasts (bottom-left) */}
         <div className="nav-content relative">
           <div className="toggle-btn relative" onClick={toggleNav}>
             <Image

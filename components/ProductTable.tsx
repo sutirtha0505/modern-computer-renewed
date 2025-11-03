@@ -247,7 +247,7 @@ const ProductTable: React.FC = () => {
           <TextSearch />
         </button>
       </div>
-      <div className="text-center w-full overflow-x-auto">
+      <div className="text-center w-full scroll-y-auto">
         <table className="border">
           <thead className="text-indigo-500">
             <tr>

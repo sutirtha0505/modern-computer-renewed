@@ -5,7 +5,7 @@ import { CiViewTable } from "react-icons/ci";
 import { MdOutlineDashboardCustomize } from "react-icons/md";
 import { TbTableOptions } from "react-icons/tb";
 import { useRouter } from "next/navigation";
-import { GalleryHorizontal, GlobeLock, TableProperties, TicketPercent, Truck } from "lucide-react";
+import { GalleryHorizontal, GlobeLock, Newspaper, TableProperties, TicketPercent, Truck } from "lucide-react";
 import { FaComputer } from "react-icons/fa6";
 import { MdOutlineCategory } from "react-icons/md";
 import { TiInfoLargeOutline } from "react-icons/ti";
@@ -183,6 +183,17 @@ const Admin = () => {
             <GlobeLock size={30} />
             <p className="text-center font-semibold text-xs">
               Privacy Statement Management
+            </p>
+          </div>
+          <div
+            onClick={() => {
+              router.push("/admin/product-categories-in-homepage");
+            }}
+            className="p-4 rounded-sm flex flex-col justify-center items-center bg-indigo-700 border-indigo-700 border-2 hover:bg-transparent hover:text-indigo-700 cursor-pointer h-24 gap-2"
+          >
+            <Newspaper size={30} />
+            <p className="text-center font-semibold text-xs">
+              Product Categories in Homepage
             </p>
           </div>
         </div>
