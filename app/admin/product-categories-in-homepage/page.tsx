@@ -1,6 +1,4 @@
 "use client"
-import ProductByCategoryAdmin from '@/components/ProductByCategoryAdmin';
-import ProductCategoriesInHomePage from '@/components/ProductCategoriesInHomePage';
 import ProductCategoriesInHomepageAdmin from '@/components/ProductCategoriesInHomepageAdmin';
 import React, { useState, useEffect } from 'react';
 import { BlinkBlur } from 'react-loading-indicators';

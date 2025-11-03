@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { formatDistanceToNow } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
@@ -120,7 +120,6 @@ const NotificationBubbleOnDraggableCircularNav = () => {
   const [currentSection, setCurrentSection] = useState<Section>("orders");
 
   // We'll show a toast and update it periodically. Make this less frequent.
-  const fadeDuration = 500; // kept for potential future use
   const displayInterval = 30000; // 30s per item (was 5000)
 
   // (no persistent toast id required for transient toasts)

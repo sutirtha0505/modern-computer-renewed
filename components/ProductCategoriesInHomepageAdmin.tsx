@@ -9,6 +9,11 @@ type CategoryItem = {
   count: number;
 };
 
+type ProductRow = {
+  product_main_category?: string | null;
+  show_in_homepage?: boolean | null;
+};
+
 const ProductCategoriesInHomepageAdmin: React.FC = () => {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -29,7 +34,7 @@ const ProductCategoriesInHomepageAdmin: React.FC = () => {
         if (error) throw error;
 
         const map = new Map<string, { showInHomepage: boolean; count: number }>();
-        (data || []).forEach((row: any) => {
+        (data || []).forEach((row: ProductRow) => {
           const name = (row.product_main_category || "").toString();
           if (!name) return;
           const prev = map.get(name) || { showInHomepage: false, count: 0 };
@@ -47,9 +52,10 @@ const ProductCategoriesInHomepageAdmin: React.FC = () => {
         // sort alphabetically
         items.sort((a, b) => a.name.localeCompare(b.name));
         setCategories(items);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        setError(err.message || String(err));
+        if (err instanceof Error) setError(err.message);
+        else setError(String(err));
       } finally {
         setLoading(false);
       }
@@ -73,9 +79,10 @@ const ProductCategoriesInHomepageAdmin: React.FC = () => {
       setCategories((prev) =>
         prev.map((c) => (c.name === category ? { ...c, showInHomepage: checked } : c))
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.message || String(err));
+      if (err instanceof Error) setError(err.message);
+      else setError(String(err));
     } finally {
       setUpdating(null);
     }

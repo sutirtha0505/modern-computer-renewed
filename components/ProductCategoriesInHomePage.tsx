@@ -28,9 +28,7 @@ const ProductCategoriesInHomePage: React.FC = () => {
   const router = useRouter();
   const [products, setProducts] = useState<FetchedProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-  const [slideWidth, setSlideWidth] = useState(300);
-  const [slideHeight, setSlideHeight] = useState(384);
+  
 
   // categories will be derived from products that are marked show_in_homepage
   const [categories, setCategories] = useState<string[]>([]);
@@ -43,7 +41,7 @@ const ProductCategoriesInHomePage: React.FC = () => {
     return 1000;
   }, []);
 
-  const [scrollSpeed, setScrollSpeed] = useState(1000);
+  
 
   /**
    * Small subcomponent: a carousel for a single category.
@@ -174,36 +172,10 @@ const ProductCategoriesInHomePage: React.FC = () => {
     );
   };
 
-  // keep a simple responsiveness effect for initial layout values
-  useEffect(() => {
-    const updateResponsiveness = () => {
-      const width = window.innerWidth;
-      const newScroll = getScrollSpeed();
-      setScrollSpeed(newScroll);
-
-      if (width < 640) {
-        setSlideWidth(width - 40);
-        setSlideHeight(300);
-        setIsMobile(true);
-      } else if (width < 768) {
-        setSlideWidth((width - 40 - 16) / 2);
-        setSlideHeight(300);
-        setIsMobile(true);
-      } else if (width < 1024) {
-        setSlideWidth((width - 40 - 32) / 3);
-        setSlideHeight(350);
-        setIsMobile(false);
-      } else {
-        setSlideWidth((width - 40 - 48) / 4);
-        setSlideHeight(384);
-        setIsMobile(false);
-      }
-    };
-
-    updateResponsiveness();
-    window.addEventListener("resize", updateResponsiveness);
-    return () => window.removeEventListener("resize", updateResponsiveness);
-  }, [getScrollSpeed]);
+  // NOTE: CategoryCarousel instances manage their own responsive sizing.
+  // The previous top-level responsiveness state was unused by render and
+  // caused eslint `no-unused-vars` errors. Kept a no-op state to avoid
+  // touching other logic; per-component sizing is handled locally.
 
   useEffect(() => {
     const fetchProducts = async () => {
