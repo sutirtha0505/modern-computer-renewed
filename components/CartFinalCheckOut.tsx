@@ -12,6 +12,19 @@ interface CartItem {
   quantity: number;
   imageUrl?: string;
   product_name: string;
+  product_MRP?: number;
+  product_discount?: number;
+  product_amount?: number;
+}
+
+interface FetchedProduct {
+  product_id: string;
+  product_image: { url: string }[];
+  product_name: string;
+  product_MRP: number;
+  product_discount: number;
+  product_amount: number;
+  product_SP: number;
 }
 
 interface CustomerDetails {
@@ -184,19 +197,134 @@ const CartFinalCheckOut: React.FC<CartFinalCheckOutProps> = ({ userId }) => {
     const cartData = params.get("cart");
 
     if (cartData) {
-      const parsedCart = JSON.parse(decodeURIComponent(cartData));
-      setCart(parsedCart);
+      let parsedCart: { product_id: string; quantity: number }[] | null = null;
 
-      // Calculate total sum directly from the cart
-      const total = parsedCart.reduce(
-        (sum: number, product: CartItem) =>
-          sum + product.product_SP * product.quantity,
-        0
-      );
-      setTotalSum(total);
-      setDiscountedTotal(total); // Initially set discounted total as total sum
+      // URLSearchParams.get() usually returns a decoded string already.
+      // Try parsing directly first, then fall back to decodeURIComponent if needed.
+      try {
+        parsedCart = JSON.parse(cartData);
+      } catch {
+        try {
+          parsedCart = JSON.parse(decodeURIComponent(cartData));
+        } catch (err) {
+          console.error("Failed to parse cart data from URL:", err);
+          parsedCart = null;
+        }
+      }
+
+      if (parsedCart) {
+        // parsedCart may be just [{ product_id, quantity }]
+        // Normalize: create a map of product_id -> quantity
+        const qtyMap: Record<string, number> = {};
+        parsedCart.forEach((p) => {
+          if (p && p.product_id) qtyMap[p.product_id] = Number(p.quantity) || 1;
+        });
+
+        // Fetch product details from Supabase for the product_ids
+        (async () => {
+          try {
+            const productIds = Object.keys(qtyMap);
+            // Debug: log the parsed cart ids and quantities
+            console.log("CartFinalCheckOut: parsed cart qtyMap:", qtyMap);
+            console.log("CartFinalCheckOut: productIds to fetch:", productIds);
+            const { data: products, error } = await supabase
+              .from("products")
+              .select(
+                "product_id, product_image, product_name, product_MRP, product_discount, product_amount, product_SP"
+              )
+              .in("product_id", productIds);
+
+            if (error) {
+              console.error("Error fetching product details:", error);
+              try {
+                fetch(
+                  `/api/log?msg=${encodeURIComponent(
+                    `Cart Checkout FETCH ERROR - user:${userId} - ${String(error)}`
+                  )}`
+                ).catch(() => {});
+              } catch {}
+              return;
+            }
+
+            // Debug: log fetched products (ids and key fields)
+            const fetchedProducts = (products || []) as FetchedProduct[];
+            if (!fetchedProducts || fetchedProducts.length === 0) {
+              console.warn("CartFinalCheckOut: no products returned for ids:", productIds);
+            } else {
+              try {
+                console.log(
+                  "CartFinalCheckOut: fetched products:",
+                  fetchedProducts.map((p) => ({
+                    id: p.product_id,
+                    name: p.product_name,
+                    sp: p.product_SP,
+                    mrp: p.product_MRP,
+                  }))
+                );
+              } catch (err) {
+                console.error(err);
+                console.log("CartFinalCheckOut: fetched products (raw):", products);
+              }
+            }
+
+            // Merge fetched product details with quantities
+            const merged: CartItem[] = fetchedProducts.map((prod) => {
+              // Try to find an image with "_first"; fallback to the first image url
+              let imageUrl: string | undefined;
+              if (Array.isArray(prod.product_image) && prod.product_image.length) {
+                const firstMatch = prod.product_image.find((img: { url?: string }) =>
+                  String(img?.url || "").includes("_first")
+                );
+                imageUrl = firstMatch?.url || prod.product_image[0]?.url;
+              }
+
+              return {
+                product_id: prod.product_id,
+                product_SP: prod.product_SP,
+                product_MRP: prod.product_MRP,
+                product_discount: prod.product_discount,
+                product_amount: prod.product_amount,
+                product_name: prod.product_name,
+                imageUrl: imageUrl,
+                quantity: qtyMap[prod.product_id] || 1,
+              } as CartItem;
+            });
+
+            setCart(merged);
+
+            const total = merged.reduce(
+              (sum: number, product: CartItem) =>
+                sum + (Number(product.product_SP) || 0) * product.quantity,
+              0
+            );
+            setTotalSum(total);
+            setDiscountedTotal(total);
+            // Send a server-side log so it appears in the terminal
+            try {
+              fetch(
+                `/api/log?msg=${encodeURIComponent(
+                  `Cart Checkout OK - user:${userId} - items:${productIds.length}`
+                )}`
+              ).catch(() => {});
+            } catch (err) {
+              console.error("Logging to /api/log failed:", err);
+            }
+          } catch (err) {
+            console.error("Failed to build cart items from product ids:", err);
+            try {
+              fetch(
+                `/api/log?msg=${encodeURIComponent(
+                  `Cart Checkout ERROR - user:${userId} - ${String(err)}`
+                )}`
+              ).catch(() => {});
+            } catch (err2) {
+              console.error("Logging to /api/log failed:", err2);
+            }
+          }
+        })();
+      }
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     const fetchCustomerDetails = async () => {

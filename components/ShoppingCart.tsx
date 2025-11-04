@@ -39,13 +39,11 @@ const ShoppingCart = () => {
   const totalSavings = (parseFloat(totalMRP) - parseFloat(totalSum)).toFixed(2);
 
   const handleProceedToCheckout = () => {
-    const updatedCart = cart.map((product) => {
-      const imageUrl = product.product_image?.find((img) =>
-        img.url.includes("_first")
-      )?.url;
-
-      return { ...product, imageUrl };
-    });
+    // Only send minimal data in the URL to keep it small
+    const updatedCart = cart.map((product) => ({
+      product_id: product.product_id,
+      quantity: product.quantity,
+    }));
 
     const cartString = encodeURIComponent(JSON.stringify(updatedCart));
     router.push(`/checkout-cart?cart=${cartString}`);
