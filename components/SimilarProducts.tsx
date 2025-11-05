@@ -191,7 +191,7 @@ const SimilarProducts: React.FC<SimilarProductsProps> = ({ singleProduct }) => {
                   }}
               >
                 <div
-                    className="border p-4 h-full flex flex-col justify-center items-center rounded-md cursor-pointer bg-indigo-300 dark:bg-gray-700"
+                    className="border p-8 h-full flex flex-col justify-center items-center rounded-md cursor-pointer bg-indigo-300 dark:bg-gray-700"
                   onClick={() => router.push(`/product/${product.product_id}`)}
                     style={{ height: slideHeight }}
                 >

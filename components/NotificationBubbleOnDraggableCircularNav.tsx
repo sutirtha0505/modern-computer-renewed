@@ -320,6 +320,7 @@ const NotificationBubbleOnDraggableCircularNav = () => {
         .from("products")
         .select("product_id, product_name, product_image, created_at")
         .order("created_at", { ascending: false })
+        .eq("show_product", true)
         .limit(3);
       if (error) {
         console.error("Error fetching recent products:", error);

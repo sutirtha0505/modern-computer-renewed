@@ -112,6 +112,7 @@ const Header = () => {
   const searchHandler = () => {
     if (query.trim()) {
       router.push(`/search/${query}`);
+      setSuggestions([]);
     }
   };
 
@@ -129,11 +130,12 @@ const Header = () => {
     }
   };
 
-  // Fetch function using ILIKE
+  // Fetch function using ILIKE for the suggestions
   const fetchProducts = async (query: string) => {
     const { data, error } = await supabase
       .from("products")
       .select("*")
+      .eq("show_product", true)
       .ilike("product_name", `%${query}%`);
     if (error) {
       console.error("Error fetching products:", error);
@@ -143,9 +145,9 @@ const Header = () => {
   };
 
   const handleSuggestionClick = (product: Product) => {
-    setQuery(product.product_name);
+    router.push(`/product/${product.product_id}`);
+    setQuery("");
     setSuggestions([]);
-    searchHandler();
   };
 
   useEffect(() => {

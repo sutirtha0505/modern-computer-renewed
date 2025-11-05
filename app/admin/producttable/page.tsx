@@ -1,8 +1,7 @@
-"use client"
-import ProductTable from '@/components/ProductTable';
-import React, { useState, useEffect } from 'react';
-import { BlinkBlur } from 'react-loading-indicators';
-
+"use client";
+import ProductTable from "@/components/ProductTable";
+import React, { useState, useEffect } from "react";
+import { BlinkBlur } from "react-loading-indicators";
 
 const ProductTablePage = () => {
   const [loading, setLoading] = useState(true);
@@ -36,11 +35,10 @@ const ProductTablePage = () => {
   }
 
   return (
-    <div className="pt-16 w-full h-full pl-4 pr-4 pb-0 flex flex-col items-center justify-center">
+    <div className="pt-16 w-full min-h-screen px-4 flex flex-col items-stretch">
       <ProductTable />
     </div>
   );
 };
 
-
-export default ProductTablePage
+export default ProductTablePage;

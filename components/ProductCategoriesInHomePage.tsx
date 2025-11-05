@@ -132,7 +132,7 @@ const ProductCategoriesInHomePage: React.FC = () => {
                 return (
                   <div key={`${product.product_id}-${idx}`} className="flex-shrink-0" style={{ width: localSlideWidth, paddingRight: 16 }}>
                     <div
-                      className="border p-4 h-full flex flex-col justify-center items-center rounded-md cursor-pointer bg-indigo-300 dark:bg-gray-700"
+                      className="border p-4 h-full flex flex-col justify-center items-center rounded-md cursor-pointer bg-gray-300 dark:bg-gray-700"
                       onClick={() => router.push(`/product/${product.product_id}`)}
                       style={{ height: localSlideHeight }}
                     >

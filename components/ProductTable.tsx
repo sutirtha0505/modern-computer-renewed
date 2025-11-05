@@ -44,20 +44,74 @@ const ProductTable: React.FC = () => {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("product_id", productId);
-    if (error) {
-      console.error("Error deleting product:", error.message);
-    } else {
-      fetchProducts();
+    try {
+      // 1️⃣ Fetch the product to get its images first
+      const { data: product, error: fetchError } = await supabase
+        .from("products")
+        .select("product_image")
+        .eq("product_id", productId)
+        .single();
+
+      if (fetchError) {
+        console.error(
+          "Error fetching product for deletion:",
+          fetchError.message
+        );
+        return;
+      }
+
+      // 2️⃣ Delete all related images from Supabase Storage
+      if (product?.product_image?.length > 0) {
+        const imagePaths = product.product_image.map(
+          (img: { url: string }) =>
+            img.url.split("/storage/v1/object/public/product-image/")[1]
+        );
+
+        const { error: deleteImagesError } = await supabase.storage
+          .from("product-image")
+          .remove(imagePaths);
+
+        if (deleteImagesError) {
+          console.error(
+            "Error deleting product images:",
+            deleteImagesError.message
+          );
+        }
+      }
+
+      // 3️⃣ Delete the folder (optional but nice cleanup)
+      const { error: deleteFolderError } = await supabase.storage
+        .from("product-image")
+        .remove([`${productId}/`]); // this removes the folder if empty or recursive
+
+      if (deleteFolderError && deleteFolderError.message !== "Not Found") {
+        console.error(
+          "Error deleting product folder:",
+          deleteFolderError.message
+        );
+      }
+
+      // 4️⃣ Delete the product from DB
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("product_id", productId);
+
+      if (error) {
+        console.error("Error deleting product:", error.message);
+      } else {
+        fetchProducts();
+      }
+    } catch (err) {
+      console.error("Unexpected error deleting product:", err);
     }
   };
 
   const handleDeleteImage = async (product: Product, imageIndex: number) => {
     const imageToDelete = product.product_image[imageIndex];
-    const imagePath = imageToDelete.url.split("/").slice(-2).join("/");
+    const imagePath = imageToDelete.url.split(
+      "/storage/v1/object/public/product-image/"
+    )[1];
 
     const { error: deleteError } = await supabase.storage
       .from("product-image")
@@ -93,7 +147,7 @@ const ProductTable: React.FC = () => {
       const updatedProductSP =
         editingProduct.product_MRP -
         (editingProduct.product_MRP * editingProduct.product_discount) / 100;
-  
+
       // Upload new images
       const imageUrls = [...editingProduct.product_image];
       const uploadPromises = newImages.map(async (image) => {
@@ -103,12 +157,12 @@ const ProductTable: React.FC = () => {
         const { error: uploadError } = await supabase.storage
           .from("product-image")
           .upload(filePath, image);
-  
+
         if (uploadError) {
           console.error("Error uploading image:", uploadError.message);
           return;
         }
-  
+
         const { data: publicUrlData } = await supabase.storage
           .from("product-image")
           .getPublicUrl(filePath);
@@ -118,9 +172,9 @@ const ProductTable: React.FC = () => {
           console.error("Error getting public URL");
         }
       });
-  
+
       await Promise.all(uploadPromises);
-  
+
       const { error } = await supabase
         .from("products")
         .update({
@@ -135,7 +189,7 @@ const ProductTable: React.FC = () => {
           show_product: editingProduct.show_product, // Include show_product field here
         })
         .eq("product_id", editingProduct.product_id);
-  
+
       if (error) {
         console.error("Error updating product:", error.message);
       } else {
@@ -145,7 +199,6 @@ const ProductTable: React.FC = () => {
       }
     }
   };
-  
 
   const onDrop = (acceptedFiles: File[]) => {
     setNewImages([...newImages, ...acceptedFiles]);
@@ -197,7 +250,10 @@ const ProductTable: React.FC = () => {
   // Add pagination logic
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const handlePageChange = (pageNumber: number) => {
@@ -205,8 +261,8 @@ const ProductTable: React.FC = () => {
   };
 
   return (
-    <div className=" w-full items-center flex flex-col gap-3 p-4">
-      <h1 className="text-center text-indigo-500 font-extrabold text-3xl select-text">
+    <div className="items-center flex flex-col gap-3 p-4">
+      <h1 className=" text-indigo-500 font-extrabold text-3xl select-text">
         Product table
       </h1>
       <div className="mb-4 flex items-center gap-2">
@@ -247,13 +303,13 @@ const ProductTable: React.FC = () => {
           <TextSearch />
         </button>
       </div>
-      <div className="text-center w-full scroll-y-auto">
+      <div className="text-center overflow-x-scroll overflow-y-hidden">
         <table className="border">
-          <thead className="text-indigo-500">
+          <thead className="text-indigo-500 bg-gray-900">
             <tr>
               <th className="py-2 px-4 border">Product ID</th>
               <th className="py-2 px-4 border">Product Name</th>
-              <th className="py-2 px-4 border">Description</th>
+              <th className="py-2 px-4 border w-64">Description</th>
               <th className="py-2 px-4 border">MRP</th>
               <th className="py-2 px-4 border">Discount</th>
               <th className="py-2 px-4 border">SP</th>
@@ -264,13 +320,20 @@ const ProductTable: React.FC = () => {
               <th className="py-2 px-4 border">Action</th>
             </tr>
           </thead>
+
           <tbody>
             {currentProducts.map((product) => (
-              <tr key={product.product_id}>
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
+              <tr
+                key={product.product_id}
+                className="hover:bg-[#1b2733] transition-colors"
+              >
+                {/* Product ID */}
+                <td className="py-2 px-4 border text-gray-300 break-all max-w-xs">
                   {product.product_id}
                 </td>
-                <td className="py-2 px-4 border text-indigo-500 hover:bg-[#283c4f]">
+
+                {/* Product Name */}
+                <td className="py-2 px-4 border text-indigo-400 font-semibold">
                   {editingProduct?.product_id === product.product_id ? (
                     <input
                       type="text"
@@ -281,16 +344,18 @@ const ProductTable: React.FC = () => {
                           product_name: e.target.value,
                         })
                       }
-                      className="py-2 px-4 border bg-black border-white text-wrap w-full"
+                      className="py-2 px-2 border bg-black border-white w-full rounded"
                     />
                   ) : (
                     product.product_name
                   )}
                 </td>
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
+
+                {/* Product Description */}
+                <td className="py-2 px-4 border text-gray-300 whitespace-normal break-words max-w-sm">
                   {editingProduct?.product_id === product.product_id ? (
-                    <input
-                      type="text"
+                    <textarea
+                      rows={2}
                       value={editingProduct.product_description}
                       onChange={(e) =>
                         setEditingProduct({
@@ -298,13 +363,17 @@ const ProductTable: React.FC = () => {
                           product_description: e.target.value,
                         })
                       }
-                      className="py-2 px-4 border bg-black border-white text-wrap w-full"
+                      className="py-2 px-2 border bg-black border-white w-full rounded resize-none"
                     />
                   ) : (
-                    product.product_description
+                    <span className="line-clamp-3">
+                      {product.product_description}
+                    </span>
                   )}
                 </td>
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
+
+                {/* MRP */}
+                <td className="py-2 px-4 border text-gray-300 text-center">
                   {editingProduct?.product_id === product.product_id ? (
                     <input
                       type="number"
@@ -315,13 +384,15 @@ const ProductTable: React.FC = () => {
                           product_MRP: Number(e.target.value),
                         })
                       }
-                      className="py-2 border bg-black border-white text-wrap w-full"
+                      className="py-1 px-2 border bg-black border-white w-full rounded"
                     />
                   ) : (
-                    `Rs. ${product.product_MRP}`
+                    `₹${product.product_MRP}`
                   )}
                 </td>
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
+
+                {/* Discount */}
+                <td className="py-2 px-4 border text-center text-gray-300">
                   {editingProduct?.product_id === product.product_id ? (
                     <input
                       type="number"
@@ -332,16 +403,20 @@ const ProductTable: React.FC = () => {
                           product_discount: Number(e.target.value),
                         })
                       }
-                      className="py-2 px-4 border bg-black border-white text-wrap w-full"
+                      className="py-1 px-2 border bg-black border-white w-full rounded"
                     />
                   ) : (
                     `${product.product_discount}%`
                   )}
                 </td>
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
-                  Rs. {product.product_SP}
+
+                {/* SP */}
+                <td className="py-2 px-4 border text-gray-300 text-center">
+                  ₹{product.product_SP}
                 </td>
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
+
+                {/* Amount */}
+                <td className="py-2 px-4 border text-gray-300 text-center">
                   {editingProduct?.product_id === product.product_id ? (
                     <input
                       type="number"
@@ -352,47 +427,57 @@ const ProductTable: React.FC = () => {
                           product_amount: Number(e.target.value),
                         })
                       }
-                      className="py-2 border bg-black border-white text-wrap w-full"
+                      className="py-1 px-2 border bg-black border-white w-full rounded"
                     />
                   ) : (
                     product.product_amount
                   )}
                 </td>
-                <td className="py-2 px-4 border hover:bg-[#283c4f] text-cyan-500 font-bold">
+
+                {/* Category */}
+                <td className="py-2 px-4 border text-cyan-400 font-bold text-center">
                   {product.product_category}
                 </td>
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
-                  {product.product_image.map((image, index) => (
-                    <div key={index} className="relative flex flex-col w-full ">
-                      <Image
-                        src={image.url}
-                        alt={`Product ${product.product_id} Image ${index}`}
-                        className="max-h-20 max-w-20 object-cover rounded-md"
-                        width={500}
-                        height={500}
-                      />
-                      {editingProduct?.product_id === product.product_id && (
-                        <button
-                          onClick={() => handleDeleteImage(product, index)}
-                          className="absolute top-0 left-0 bg-black text-white rounded-full p-1"
-                        >
-                          &times;
-                        </button>
-                      )}
-                    </div>
-                  ))}
+
+                {/* Images */}
+                <td className="py-2 px-4 border text-center">
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {product.product_image.map((image, index) => (
+                      <div key={index} className="relative">
+                        <Image
+                          src={image.url}
+                          alt={`Product ${product.product_id} Image ${index}`}
+                          className="h-16 w-16 object-cover rounded-md border"
+                          width={64}
+                          height={64}
+                        />
+                        {editingProduct?.product_id ===
+                          product.product_id && (
+                          <button
+                            onClick={() => handleDeleteImage(product, index)}
+                            className="absolute top-0 right-0 bg-black bg-opacity-70 text-white rounded-full p-1 text-xs"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
                   {editingProduct?.product_id === product.product_id && (
                     <div
                       {...getRootProps()}
-                      className="border-2 border-dashed border-gray-400 rounded-md p-4 mt-2 flex items-center flex-col"
+                      className="border-2 border-dashed border-gray-400 rounded-md p-2 mt-2 flex items-center flex-col text-gray-400 cursor-pointer hover:border-indigo-500 transition"
                     >
                       <input {...getInputProps()} multiple />
-                      <CloudUpload />
-                      <p>Upload new image</p>
+                      <CloudUpload className="mb-1" />
+                      <p className="text-xs">Upload new image</p>
                     </div>
                   )}
                 </td>
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
+
+                {/* Sellable */}
+                <td className="py-2 px-4 border text-center text-gray-300">
                   {editingProduct?.product_id === product.product_id ? (
                     <select
                       value={editingProduct.show_product ? "true" : "false"}
@@ -402,37 +487,40 @@ const ProductTable: React.FC = () => {
                           show_product: e.target.value === "true",
                         })
                       }
-                      className="py-2 border bg-black border-white text-wrap w-full"
+                      className="py-1 px-2 border bg-black border-white rounded w-full"
                     >
                       <option value="true">True</option>
                       <option value="false">False</option>
                     </select>
                   ) : product.show_product ? (
-                    "True"
+                    <span className="text-green-400">True</span>
                   ) : (
-                    "False"
+                    <span className="text-red-400">False</span>
                   )}
                 </td>
 
-                <td className="py-2 px-4 border hover:bg-[#283c4f]">
+                {/* Actions */}
+                <td className="py-2 px-4 border text-center">
                   {editingProduct?.product_id === product.product_id ? (
                     <button
                       onClick={handleSave}
-                      className="bg-green-500 text-white p-2 rounded-md w-full"
+                      className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-md w-full transition"
                     >
                       Save
                     </button>
                   ) : (
-                    <div className="flex flex-col gap-2 justify-center">
+                    <div className="flex flex-col gap-2">
                       <button
                         onClick={() => handleEdit(product)}
-                        className="bg-blue-500 text-white p-2 rounded-md mr-2  w-full"
+                        className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md w-full transition"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDeleteProduct(product.product_id)}
-                        className="bg-red-500 text-white p-2 rounded-md  w-full"
+                        onClick={() =>
+                          handleDeleteProduct(product.product_id)
+                        }
+                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md w-full transition"
                       >
                         Delete
                       </button>
@@ -443,43 +531,74 @@ const ProductTable: React.FC = () => {
             ))}
           </tbody>
         </table>
-        
+
         {/* Add pagination controls */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-4">
+          <div className="flex flex-wrap justify-center items-center gap-2 mt-4">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className={`px-4 py-2 rounded-md ${
                 currentPage === 1
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600'
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-blue-500 hover:bg-blue-600"
               } text-white`}
             >
               Previous
             </button>
-            
-            {[...Array(totalPages)].map((_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => handlePageChange(index + 1)}
-                className={`px-4 py-2 rounded-md ${
-                  currentPage === index + 1
-                    ? 'bg-indigo-500'
-                    : 'bg-gray-500 hover:bg-gray-600'
-                } text-white`}
-              >
-                {index + 1}
-              </button>
-            ))}
-            
+
+            {(() => {
+              // Show a sliding window of page buttons (max 10)
+              const maxButtons = 10;
+              if (totalPages <= maxButtons) {
+                return [...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => handlePageChange(index + 1)}
+                    className={`px-4 py-2 rounded-md ${
+                      currentPage === index + 1
+                        ? "bg-indigo-500"
+                        : "bg-gray-500 hover:bg-gray-600"
+                    } text-white`}
+                  >
+                    {index + 1}
+                  </button>
+                ));
+              }
+
+              const half = Math.floor(maxButtons / 2);
+              let start = Math.max(1, currentPage - half);
+              const end = Math.min(totalPages, start + maxButtons - 1);
+
+              if (end - start + 1 < maxButtons) {
+                start = Math.max(1, end - maxButtons + 1);
+              }
+
+              const buttons = [];
+              for (let i = start; i <= end; i++) {
+                buttons.push(
+                  <button
+                    key={i}
+                    onClick={() => handlePageChange(i)}
+                    className={`px-4 py-2 rounded-md ${
+                      currentPage === i ? "bg-indigo-500" : "bg-gray-500 hover:bg-gray-600"
+                    } text-white`}
+                  >
+                    {i}
+                  </button>
+                );
+              }
+
+              return buttons;
+            })()}
+
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               className={`px-4 py-2 rounded-md ${
                 currentPage === totalPages
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-600'
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-blue-500 hover:bg-blue-600"
               } text-white`}
             >
               Next
